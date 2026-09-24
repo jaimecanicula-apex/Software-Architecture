@@ -1,0 +1,38 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "plus jakarta sans",
+        "createdAt": "2026-09-24T12:59:26.980Z",
+        "reason": "user brief pinned Space Mono + Plus Jakarta Sans"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "app/index.html"
+        ],
+        "createdAt": "2026-09-24T12:59:36.021Z",
+        "reason": "agent: flagged about section and inlay__field both have clamp() padding; screenshot shows real inset"
+      },
+      {
+        "rule": "nested-cards",
+        "value": "*",
+        "files": [
+          "app/index.html"
+        ],
+        "createdAt": "2026-09-24T12:59:36.251Z",
+        "reason": "agent: eggshell field inside crackle frame is one inlay object per sơn mài direction contract"
+      },
+      {
+        "rule": "overused-font",
+        "value": "roboto",
+        "createdAt": "2026-09-24T14:16:14.068Z",
+        "reason": "user confirmed: brief sets Roboto as secondary font (Texturina primary)"
+      }
+    ]
+  }
+}
