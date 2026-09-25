@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Favicon: the Designed by flow seal reduced to its border and a carved lotus. Authored for this page. -->
+  <rect x="2" y="2" width="60" height="60" rx="4" fill="#b8321f"/>
+  <rect x="7" y="7" width="50" height="50" rx="2" fill="none" stroke="#f1e7d3" stroke-width="2.5"/>
+  <g fill="none" stroke="#f1e7d3" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" transform="translate(12 12) scale(1.667)">
+    <path d="M12 19.5c-3.6-2-6.4-5.2-6.4-9.4 2.8.8 5 3 6.4 5.9 1.4-2.9 3.6-5.1 6.4-5.9 0 4.2-2.8 7.4-6.4 9.4z"/>
+    <path d="M12 16c-1.8-3.6-1.8-7.8 0-11.4 1.8 3.6 1.8 7.8 0 11.4z"/>
+  </g>
+</svg>

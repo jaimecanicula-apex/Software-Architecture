@@ -8,11 +8,16 @@ web
 
 ## Stack
 
-Build-free static site: plain HTML, CSS, and JavaScript with no build step, served from Azure Static Web Apps behind Azure Front Door and its WAF. No backend: no Function App, API, database or Blob Storage. Infrastructure is Terraform in `infra/` (dev, qa, uat, prod; per-environment subscription). `WEBSITES-(Azure)/` is a reference for the edge, delivery and operations pattern only; its document API is out of scope.
+Build-free static site: plain HTML, CSS, and JavaScript with no build step, served from Azure Static Web Apps behind Azure Front Door and its WAF. No backend: no Function App, API, database or Blob Storage. Infrastructure is Terraform in three designs: `publicly-accessible-static-website/` (Front Door + WAF, external, anonymous), `public-signin-static-website/` (Front Door + WAF, Entra sign-in, approved guests) and `privately-accessible-static-website/` (private endpoint, APEX Entra sign-in, internal), each with dev, qa, uat, prod and per-environment subscriptions. Both are future APEX golden templates (`GOLDEN-TEMPLATES.md`). `WEBSITES-(Azure)/` is a reference for the edge, delivery and operations pattern only; its document API is out of scope.
 
 ## Users
 
-Undecided. The user describes the audience as a general public website, with no specific primary user or job confirmed. Do not assume investors, regulators, or any other audience without confirmation.
+Two audiences, each with its own design (user-confirmed definitions):
+
+- **Internal users:** anyone signing in with APEX Entra ID, meaning APEX employees, people from companies inside APEX, and contractors (IT and business colleagues alike). Internal sites are private: no internet exposure and no connection outside the APEX tenant. Design: `privately-accessible-static-website/` with `app-internal/`.
+- **External users:** external clients or users, never anyone from APEX itself. Anonymous public design: `publicly-accessible-static-website/` with `app/`. When they must sign in first: `public-signin-static-website/` with `app-public-signin/` (Entra ID sign-in as B2B guests of the APEX tenant, approved groups only).
+
+Beyond that split, no specific job or persona is confirmed; do not assume one.
 
 ## Product Purpose
 
@@ -34,7 +39,7 @@ A generic, reusable pattern for publishing static websites, deployed separately 
 
 ## Evidence on Hand
 
-- Architecture of the static-website Terraform stack: `infra/ARCHITECTURE.md` (source) and the public page `app/architecture.html`.
+- Architecture of the static-website Terraform stack: `publicly-accessible-static-website/ARCHITECTURE.md` (source) and the public page `app/architecture.html`.
 - Architecture, deployment, governance, and operations documentation in `WEBSITES-(Azure)/`.
 - No site source code, brand assets, or client content is in this workspace. Do not invent company text, documents, testimonials, or claims.
 

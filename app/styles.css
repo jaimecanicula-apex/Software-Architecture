@@ -59,10 +59,11 @@ code { font-family: var(--mono); font-size: 0.86em; color: var(--ink-2); backgro
 .seal__text { fill: #fff; font-family: var(--display); font-weight: 700; text-anchor: middle; }
 
 /* Icons: one line weight everywhere */
-.icon, .steps__icon svg { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+/* Official Azure architecture icons, used unmodified */
+.icon, .steps__img, .option__icon { display: block; flex: none; }
 
 /* Header */
-.masthead { position: sticky; top: 0; z-index: 20; background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(8px); }
+.masthead { position: sticky; top: 0; z-index: 20; background: #fff; border-bottom: 1px solid var(--line); }
 .masthead__row { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; min-height: 4.5rem; }
 .brand { display: inline-flex; align-items: center; gap: 0.7rem; color: var(--ink); text-decoration: none; }
 .brand:hover { color: var(--ink); }
@@ -134,7 +135,7 @@ code { font-family: var(--mono); font-size: 0.86em; color: var(--ink-2); backgro
 .steps::before { content: ""; position: absolute; left: 1.75rem; right: 1.75rem; top: 1.75rem; border-top: 1.5px dashed #c9c6c0; }
 .steps li { position: relative; counter-increment: step; }
 .steps__icon { position: relative; display: grid; place-items: center; width: 3.5rem; height: 3.5rem; border-radius: 50%; background: #fff; border: 1.5px solid var(--ink); }
-.steps__icon svg { width: 1.6rem; height: 1.6rem; }
+.steps__img { width: 1.9rem; height: 1.9rem; }
 .steps__icon::after {
   content: counter(step); position: absolute; right: -0.4rem; top: -0.4rem;
   display: grid; place-items: center; width: 1.35rem; height: 1.35rem; border-radius: 50%;
@@ -147,6 +148,7 @@ code { font-family: var(--mono); font-size: 0.86em; color: var(--ink-2); backgro
 .options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: auto repeat(7, auto); column-gap: clamp(2rem, 5vw, 4rem); }
 .option { display: grid; grid-row: span 8; grid-template-rows: subgrid; }
 .option__head { display: flex; align-items: center; gap: 0.8rem; padding-bottom: 1rem; }
+.option__icon { width: 2.1rem; height: 2.1rem; }
 .option__badge { display: grid; place-items: center; flex: none; width: 2.1rem; height: 2.1rem; border-radius: 4px; background: var(--accent); color: #fff; font: 700 1.1rem/1 var(--display); }
 .option h3 { font-size: clamp(1.25rem, 2vw, 1.5rem); font-weight: 700; }
 .option__rows { display: contents; }
@@ -204,6 +206,7 @@ code { font-family: var(--mono); font-size: 0.86em; color: var(--ink-2); backgro
 .c4-box .c4-rim { fill: none; }
 .c4-box--system rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
 .c4-box--ext rect { fill: var(--tint); stroke: #8a8781; stroke-dasharray: 5 4; }
+.c4-box--optional rect { stroke-dasharray: 6 4; }
 .c4-title { font-family: var(--display); font-size: 16px; font-weight: 700; fill: var(--ink); text-anchor: middle; }
 .c4-sub { font-family: var(--sans); font-size: 12.5px; fill: var(--muted); text-anchor: middle; }
 .c4-tag { font-family: var(--sans); font-size: 11.5px; font-style: italic; fill: var(--accent); text-anchor: middle; }
@@ -219,6 +222,7 @@ code { font-family: var(--mono); font-size: 0.86em; color: var(--ink-2); backgro
 .legend__swatch { width: 1.3rem; height: 0.85rem; border-radius: 3px; background: #fff; border: 1.5px solid var(--ink); }
 .legend__swatch--system { background: var(--accent-soft); border-color: var(--accent); border-width: 2px; }
 .legend__swatch--ext { background: var(--tint); border: 1.5px dashed #8a8781; }
+.legend__icon { width: 1.1rem; height: 1.1rem; }
 .legend__swatch--person { width: 0.95rem; height: 0.95rem; border-radius: 50%; }
 .diagram__note { margin-top: 1.25rem; font-size: 0.93rem; color: var(--muted); max-width: 60rem; }
 

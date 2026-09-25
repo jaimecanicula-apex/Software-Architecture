@@ -32,6 +32,24 @@
         "value": "roboto",
         "createdAt": "2026-09-24T14:16:14.068Z",
         "reason": "user confirmed: brief sets Roboto as secondary font (Texturina primary)"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "app-internal/index.html"
+        ],
+        "createdAt": "2026-09-24T15:02:10.218Z",
+        "reason": "agent: .section has padding-block clamp(4.5rem,10vw,8rem); detector misreads the clamp, same false positive as app/index.html"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "app-public-signin/index.html"
+        ],
+        "createdAt": "2026-09-24T15:26:11.898Z",
+        "reason": "agent: same clamp() section padding false positive as app/ and app-internal/"
       }
     ]
   }
