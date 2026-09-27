@@ -1,0 +1,49 @@
+Azure architecture icons
+
+Source: Microsoft Azure Public Service Icons V23
+https://learn.microsoft.com/azure/architecture/icons/
+
+Used unmodified to represent the Azure services they name, as Microsoft's
+terms of use allow for architecture diagrams and documentation. Files are
+renamed only (original name in brackets):
+
+  front-door.svg  [10073-icon-service-Front-Door-and-CDN-Profiles.svg]
+  waf.svg  [10362-icon-service-Web-Application-Firewall-Policies(WAF).svg]
+  static-web-app.svg  [01007-icon-service-Static-Apps.svg]
+  application-insights.svg  [00012-icon-service-Application-Insights.svg]
+  log-analytics.svg  [00009-icon-service-Log-Analytics-Workspaces.svg]
+  monitor.svg  [00001-icon-service-Monitor.svg]
+  alerts.svg  [00002-icon-service-Alerts.svg]
+  workbook.svg  [02189-icon-service-Azure-Workbooks.svg]
+  users.svg  [10230-icon-service-Users.svg]
+  groups.svg  [10223-icon-service-Groups.svg]
+  app-registration.svg  [10232-icon-service-App-Registrations.svg]
+  private-endpoint.svg  [02579-icon-service-Private-Endpoints.svg]
+  private-link.svg  [00427-icon-service-Private-Link.svg]
+  virtual-network.svg  [10061-icon-service-Virtual-Networks.svg]
+  dns-zones.svg  [10064-icon-service-DNS-Zones.svg]
+  azure-devops.svg  [10261-icon-service-Azure-DevOps.svg]
+  builds.svg  [10785-icon-service-Builds.svg]
+  code.svg  [10787-icon-service-Code.svg]
+  branch.svg  [10782-icon-service-Branch.svg]
+  resource-group.svg  [10007-icon-service-Resource-Groups.svg]
+  storage-account.svg  [10086-icon-service-Storage-Accounts.svg]
+  tag.svg  [10014-icon-service-Tag.svg]
+  dev-console.svg  [10796-icon-service-Dev-Console.svg]
+  container-apps-environment.svg  [02989-icon-service-Container-Apps-Environments.svg]
+  web-test.svg  [10850-icon-service-Web-Test.svg]
+  subscription.svg  [10002-icon-service-Subscriptions.svg]
+  cost-budgets.svg  [10793-icon-service-Cost-Budgets.svg]
+  service-health.svg  [10004-icon-service-Service-Health.svg]
+
+Added from Microsoft Azure Public Service Icons V21 (same terms):
+
+  container-registry.svg  [10105-icon-service-Container-Registries.svg]
+  managed-identity.svg  [10227-icon-service-Managed-Identities.svg]
+  container-app.svg  [02884-icon-service-Worker-Container-App.svg]
+  network-security-group.svg  [10067-icon-service-Network-Security-Groups.svg]
+  subnet.svg  [02742-icon-service-Subnet.svg]
+  virtual-machine.svg  [10021-icon-service-Virtual-Machine.svg]
+  bastion.svg  [02422-icon-service-Bastions.svg]
+  firewall.svg  [10084-icon-service-Firewalls.svg]
+  key-vault.svg  [10245-icon-service-Key-Vaults.svg]

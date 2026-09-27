@@ -13,7 +13,7 @@
         "rule": "cramped-padding",
         "value": "*",
         "files": [
-          "app/index.html"
+          "content/publicly-accessible-static-website/index.html"
         ],
         "createdAt": "2026-09-24T12:59:36.021Z",
         "reason": "agent: flagged about section and inlay__field both have clamp() padding; screenshot shows real inset"
@@ -22,7 +22,7 @@
         "rule": "nested-cards",
         "value": "*",
         "files": [
-          "app/index.html"
+          "content/publicly-accessible-static-website/index.html"
         ],
         "createdAt": "2026-09-24T12:59:36.251Z",
         "reason": "agent: eggshell field inside crackle frame is one inlay object per sơn mài direction contract"
@@ -37,19 +37,19 @@
         "rule": "cramped-padding",
         "value": "*",
         "files": [
-          "app-internal/index.html"
+          "content/privately-accessible-static-website/index.html"
         ],
         "createdAt": "2026-09-24T15:02:10.218Z",
-        "reason": "agent: .section has padding-block clamp(4.5rem,10vw,8rem); detector misreads the clamp, same false positive as app/index.html"
+        "reason": "agent: .section has padding-block clamp(4.5rem,10vw,8rem); detector misreads the clamp, same false positive as content/publicly-accessible-static-website/index.html"
       },
       {
         "rule": "cramped-padding",
         "value": "*",
         "files": [
-          "app-public-signin/index.html"
+          "content/public-signin-static-website/index.html"
         ],
         "createdAt": "2026-09-24T15:26:11.898Z",
-        "reason": "agent: same clamp() section padding false positive as app/ and app-internal/"
+        "reason": "agent: same clamp() section padding false positive as content/publicly-accessible-static-website/ and content/privately-accessible-static-website/"
       }
     ]
   }

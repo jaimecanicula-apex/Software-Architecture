@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Static Website Pattern · Designed by flow</title>
+  <meta name="description" content="A proof of concept for publishing static websites on Azure: one pattern, deployed separately for every client.">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="preload" href="assets/fonts/texturina-400-800-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/roboto-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="assets/seal.svg" type="image/svg+xml">
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="seal" viewBox="0 0 100 100">
+      <g>
+        <rect class="seal__body" x="3" y="3" width="94" height="94" rx="4"/>
+        <rect class="seal__line" x="9" y="9" width="82" height="82" rx="2" stroke-width="2.4"/>
+        <rect class="seal__line" x="13" y="13" width="74" height="74" rx="1" stroke-width="0.9"/>
+        <text class="seal__text" x="50" y="33" font-size="11.5" letter-spacing="0.9">DESIGNED</text>
+        <path class="seal__line" d="M21 41.5h19M60 41.5h19" stroke-width="1.2"/>
+        <text class="seal__text" x="50" y="45.4" font-size="10" letter-spacing="1">BY</text>
+        <text class="seal__text" x="50" y="73" font-size="27" letter-spacing="0.5">FLOW</text>
+      </g>
+    </symbol>
+  </svg>
+
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="masthead" data-open="false">
+    <div class="wrap masthead__row">
+      <a class="brand" href="index.html" aria-label="Designed by flow, home">
+        <svg class="brand__seal" viewBox="0 0 100 100" aria-hidden="true"><use href="#seal"/></svg>
+        <span class="brand__name">Designed by flow</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        <span class="nav-toggle__bars" aria-hidden="true"></span>
+        <span class="nav-toggle__label">Menu</span>
+      </button>
+      <nav id="site-nav" class="nav" aria-label="Primary">
+        <ul>
+          <li><a href="index.html#how">How it works</a></li>
+          <li><a href="index.html#going-live">Going live</a></li>
+          <li><a href="index.html#delivery">Delivery</a></li>
+          <li><a href="index.html#principles">Principles</a></li>
+          <li><a href="architecture.html">Architecture</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap hero__grid">
+        <div class="hero__copy">
+          <h1 id="hero-title">
+            <span class="hero__strong">One static website,</span>
+            <span class="hero__light">rebuilt for every client.</span>
+          </h1>
+          <p class="hero__tagline">Edge, hosting, monitoring ...</p>
+          <p class="hero__lede">A proof of concept for publishing static websites on Azure: plain HTML, CSS and JavaScript served from the edge, with nothing to run behind it.</p>
+        </div>
+
+        <svg class="hero__art" viewBox="0 0 440 300" role="img" aria-labelledby="art-title">
+          <title id="art-title">A laptop showing a simple web page, a conical nón lá hat resting against it and a red lantern hanging above</title>
+          <!-- lantern -->
+          <path class="art-line" d="M392 0 V38"/>
+          <path class="art-line" d="M383 38 H401 V46 H383 Z"/>
+          <path class="art-lantern" d="M377 48 H407 C426 72 426 102 407 126 H377 C358 102 358 72 377 48 Z"/>
+          <path class="art-rib" d="M392 50 V124 M384 50 C375 74 375 100 384 124 M400 50 C409 74 409 100 400 124"/>
+          <path class="art-line" d="M384 126 H400 V134 H384 Z"/>
+          <path class="art-line" d="M392 134 V158 M387 142 V160 M397 142 V160"/>
+          <!-- laptop -->
+          <path class="art-fill" d="M150 58 H366 Q374 58 374 66 V206 H142 V66 Q142 58 150 58 Z"/>
+          <path class="art-line" d="M142 84 H374"/>
+          <circle class="art-dot" cx="158" cy="71" r="3"/>
+          <circle class="art-dot" cx="170" cy="71" r="3"/>
+          <circle class="art-dot" cx="182" cy="71" r="3"/>
+          <path class="art-bold" d="M166 110 H268"/>
+          <path class="art-line" d="M166 132 H320 M166 150 H300 M166 168 H250"/>
+          <rect class="art-seal" x="304" y="150" width="34" height="34" rx="3"/>
+          <path class="art-seal-line" d="M310 156 H332 V178 H310 Z"/>
+          <path class="art-fill" d="M112 206 H404 L424 228 Q426 234 419 234 H97 Q90 234 92 228 Z"/>
+          <path class="art-line" d="M236 220 H280"/>
+          <!-- nón lá -->
+          <path class="art-fill" d="M104 112 L28 236 Q76 256 150 228 Z"/>
+          <path class="art-line" d="M104 112 Q84 180 72 245 M104 112 Q112 176 112 240"/>
+          <path class="art-line" d="M24 238 Q84 262 156 228"/>
+          <!-- ground, drawn in broken strokes -->
+          <path class="art-line" d="M8 272 H92 M108 272 H300 M316 272 H356 M372 272 H430"/>
+        </svg>
+      </div>
+    </section>
+
+    <section class="pillars" id="how" aria-label="How it works">
+      <div class="wrap pillars__grid">
+        <article class="pillar">
+          <img class="icon" src="assets/azure/front-door.svg" alt="" width="40" height="40">
+          <h2>Serve</h2>
+          <p><strong>Azure Front Door</strong> in front, with a <strong>web application firewall</strong>, TLS, custom domains and edge caching. The site itself is plain HTML, CSS and JavaScript on a <strong>Static Web App</strong>.</p>
+        </article>
+        <article class="pillar">
+          <img class="icon" src="assets/azure/builds.svg" alt="" width="40" height="40">
+          <h2>Deploy</h2>
+          <p>Every change goes through a <strong>pull request with its own preview site</strong>, then ships with <strong>GitHub Actions</strong> or <strong>Azure Pipelines</strong> without a build step.</p>
+        </article>
+        <article class="pillar">
+          <img class="icon" src="assets/azure/monitor.svg" alt="" width="40" height="40">
+          <h2>Watch</h2>
+          <p><strong>Availability tests from five regions</strong>, edge and firewall logs, <strong>alerts</strong> and a <strong>shared dashboard</strong> in every environment, from dev to production.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="about" aria-labelledby="about-title">
+      <div class="wrap split">
+        <div>
+          <h2 id="about-title">A pattern, not a shared platform.</h2>
+          <p class="section__lede">This site shows a reusable approach for publishing static websites. Each deployment reuses the technical pattern only. Names, wording, domains, content and branding always come from the client.</p>
+          <p class="section__lede">Site content and infrastructure follow separate release paths, so a content change never needs an infrastructure release.</p>
+        </div>
+        <div>
+          <h3 class="list-title">Every client gets its own</h3>
+          <ul class="own-list">
+            <li>Repository</li>
+            <li>Azure subscription</li>
+            <li>Dev, QA, UAT, production</li>
+            <li>Domain</li>
+            <li>Deployment token</li>
+            <li>Monitoring and alerts</li>
+            <li>Branding</li>
+            <li>Content</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="going-live" aria-labelledby="live-title">
+      <div class="wrap">
+        <div class="section__head">
+          <h2 id="live-title">How a change goes live.</h2>
+          <p class="section__lede">Reviewed on a preview site before production, confirmed by monitoring afterwards.</p>
+        </div>
+        <ol class="steps">
+          <li>
+            <span class="steps__icon"><img class="steps__img" src="assets/azure/code.svg" alt="" width="40" height="40"></span>
+            <h3>Edit</h3>
+            <p>Change the HTML, CSS or JavaScript in <code>content/publicly-accessible-static-website/</code> on a branch.</p>
+          </li>
+          <li>
+            <span class="steps__icon"><img class="steps__img" src="assets/azure/branch.svg" alt="" width="40" height="40"></span>
+            <h3>Review</h3>
+            <p>Open a pull request. It gets its own preview site, and reviewers approve it there.</p>
+          </li>
+          <li>
+            <span class="steps__icon"><img class="steps__img" src="assets/azure/builds.svg" alt="" width="40" height="40"></span>
+            <h3>Deploy</h3>
+            <p>Merge to <code>main</code>. The pipeline uploads <code>content/publicly-accessible-static-website/</code> to the Static Web App.</p>
+          </li>
+          <li>
+            <span class="steps__icon"><img class="steps__img" src="assets/azure/front-door.svg" alt="" width="40" height="40"></span>
+            <h3>Serve</h3>
+            <p>Front Door serves the new version through the firewall and caches it at the edge.</p>
+          </li>
+          <li>
+            <span class="steps__icon"><img class="steps__img" src="assets/azure/monitor.svg" alt="" width="40" height="40"></span>
+            <h3>Watch</h3>
+            <p>Availability tests and alerts confirm the site is up, fast and error-free.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section" id="delivery" aria-labelledby="delivery-title">
+      <div class="wrap">
+        <div class="section__head">
+          <h2 id="delivery-title">Two ways to deliver.</h2>
+          <p class="section__lede">Choose one per client. Both ship the same <code>content/publicly-accessible-static-website/</code> folder to the same Static Web App. Infrastructure is released separately with Terraform.</p>
+        </div>
+        <div class="options">
+          <article class="option" aria-labelledby="opt-a">
+            <header class="option__head">
+              <img class="option__icon" src="assets/azure/builds.svg" alt="" width="40" height="40">
+              <h3 id="opt-a">GitHub + GitHub Actions</h3>
+            </header>
+            <dl class="option__rows">
+              <div><dt>Source</dt><dd>GitHub repository with a protected <code>main</code> branch</dd></div>
+              <div><dt>Build</dt><dd>One job checks <code>content/publicly-accessible-static-website/</code> is complete. Nothing is compiled.</dd></div>
+              <div><dt>Release</dt><dd><code>Azure/static-web-apps-deploy</code> on every merge to <code>main</code></dd></div>
+              <div><dt>Previews</dt><dd>A preview site per pull request, removed when it closes</dd></div>
+              <div><dt>Approval</dt><dd>Required reviewers on the pull request</dd></div>
+              <div><dt>Secret</dt><dd><code>AZURE_STATIC_WEB_APPS_API_TOKEN</code></dd></div>
+              <div><dt>File</dt><dd><code>.github/workflows/deploy-static-web-app.yml</code></dd></div>
+            </dl>
+          </article>
+          <article class="option" aria-labelledby="opt-b">
+            <header class="option__head">
+              <img class="option__icon" src="assets/azure/azure-devops.svg" alt="" width="40" height="40">
+              <h3 id="opt-b">Azure Repos + Azure Pipelines</h3>
+            </header>
+            <dl class="option__rows">
+              <div><dt>Source</dt><dd>Azure Repos with branch policies on <code>main</code></dd></div>
+              <div><dt>Build</dt><dd>Build stage checks <code>content/publicly-accessible-static-website/</code> and publishes the <code>site</code> artifact</dd></div>
+              <div><dt>Release</dt><dd>Release stage deploys it with the <code>AzureStaticWebApp</code> task</dd></div>
+              <div><dt>Previews</dt><dd>A named preview per pull request, <code>pr&lt;id&gt;</code></dd></div>
+              <div><dt>Approval</dt><dd>Reviewers, plus an approval check on <code>swa-production</code></dd></div>
+              <div><dt>Secret</dt><dd>Secret variable in the <code>swa-deployment</code> group</dd></div>
+              <div><dt>File</dt><dd><code>infrastructure/publicly-accessible-static-website/pipelines/azure-pipelines.yml</code></dd></div>
+            </dl>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="principles" aria-labelledby="principles-title">
+      <div class="wrap split split--top">
+        <h2 id="principles-title">Seven rules the build keeps.</h2>
+        <dl class="rules">
+          <div><dt>Edge first</dt><dd>Azure Front Door is the only public entry point.</dd></div>
+          <div><dt>Static presentation</dt><dd>The browser receives build-free HTML, CSS and JavaScript.</dd></div>
+          <div><dt>No backend</dt><dd>No servers, databases or APIs to run, patch or secure.</dd></div>
+          <div><dt>Separate environments</dt><dd>Dev, QA, UAT and production each have their own settings, state and subscription.</dd></div>
+          <div><dt>Watched by default</dt><dd>Every environment gets availability tests, alerts and a shared dashboard.</dd></div>
+          <div><dt>Independent delivery</dt><dd>Site content and infrastructure release separately.</dd></div>
+          <div><dt>No invented configuration</dt><dd>Values missing from source are verified in Azure or authoritative IaC.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="cta" aria-label="Next">
+      <a class="pill" href="architecture.html">
+        <svg class="pill__outline" viewBox="0 0 360 96" aria-hidden="true" preserveAspectRatio="none">
+          <path d="M70 90 H48 A42 42 0 0 1 48 6 H312 A42 42 0 0 1 312 90 H296"/>
+          <path d="M88 90 H196 M212 90 H250 M266 90 H282"/>
+        </svg>
+        <span>See the architecture</span>
+      </a>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__row">
+      <a class="brand brand--small" href="index.html" aria-label="Designed by flow, home">
+        <svg class="brand__seal" viewBox="0 0 100 100" aria-hidden="true"><use href="#seal"/></svg>
+        <span class="brand__name">Designed by flow</span>
+      </a>
+      <nav class="footer__nav" aria-label="Footer">
+        <a href="index.html#how">How it works</a>
+        <a href="index.html#going-live">Going live</a>
+        <a href="index.html#delivery">Delivery</a>
+        <a href="index.html#principles">Principles</a>
+        <a href="architecture.html">Architecture</a>
+      </nav>
+    </div>
+    <p class="wrap footer__note">Proof of concept. Each client deployment replaces the name, wording, branding and content with its own approved material.</p>
+  </footer>
+
+  <script src="main.js" defer></script>
+</body>
+</html>

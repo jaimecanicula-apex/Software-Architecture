@@ -1,13 +1,13 @@
 ---
 version: 1
 slug: "app-index-html"
-primary_target: "app/index.html"
-related_targets: ["app/architecture.html"]
+primary_target: "content/publicly-accessible-static-website/index.html"
+related_targets: ["content/publicly-accessible-static-website/architecture.html"]
 ---
 
 # Home page (POC overview)
 
-Scope: `app/index.html`, the home page of the static-website POC, with `app/architecture.html` as its sibling. Visitor mode: Persuade, calm. Audience undecided (PRODUCT.md), so write for a general visitor or stakeholder. Scope is static websites only: no backend or document API.
+Scope: `content/publicly-accessible-static-website/index.html`, the home page of the static-website POC, with `content/publicly-accessible-static-website/architecture.html` as its sibling. Visitor mode: Persuade, calm. Audience undecided (PRODUCT.md), so write for a general visitor or stakeholder. Scope is static websites only: no backend or document API.
 
 Brief pins, all user-confirmed:
 - A clean site, with https://g.ieffe.dev/ as the reference. It replaces the earlier sơn mài lacquer direction.

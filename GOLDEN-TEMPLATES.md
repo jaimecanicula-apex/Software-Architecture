@@ -1,12 +1,23 @@
 # Golden templates: roadmap
 
-All three infrastructure designs in this repository are proofs of concept, written to become **APEX golden templates**: approved, versioned starting points that any team can use to publish a static website without redesigning the infrastructure.
+This repository collects **APEX golden templates**: approved, versioned starting points that any team can use to build Azure infrastructure without redesigning it. Each template lives in `infrastructure/<template-name>/`. The example site content that a template deploys lives in `content/<template-name>/`. [CLAUDE.md](CLAUDE.md) describes the layout and conventions.
 
-| Template | Folder | Use when |
+All current templates are proofs of concept.
+
+| Template | Folder | Example content | Use when |
+| --- | --- | --- | --- |
+| Publicly accessible static website | `infrastructure/publicly-accessible-static-website/` | `content/publicly-accessible-static-website/` | The audience is **external**: clients or users outside APEX |
+| Public sign-in static website | `infrastructure/public-signin-static-website/` | `content/public-signin-static-website/` | The audience is **approved external people** who must sign in with Entra ID (B2B guests of the APEX tenant) before seeing any page |
+| Privately accessible static website | `infrastructure/privately-accessible-static-website/` | `content/privately-accessible-static-website/` | The audience is **internal**: anyone signing in with APEX Entra ID (colleagues, APEX companies, contractors). No internet exposure. |
+| Privately accessible container app | `infrastructure/privately-accessible-container-app/` | `content/python-mvc-app/` | A containerised backend application (for example Python) for **internal users** in assigned Entra groups, reached on an internal URL from the corporate network |
+
+### Planned
+
+| Template | Folder | Purpose |
 | --- | --- | --- |
-| Publicly accessible static website | `publicly-accessible-static-website/` | The audience is **external**: clients or users outside APEX |
-| Public sign-in static website | `public-signin-static-website/` | The audience is **approved external people** who must sign in with Entra ID (B2B guests of the APEX tenant) before seeing any page |
-| Privately accessible static website | `privately-accessible-static-website/` | The audience is **internal**: anyone signing in with APEX Entra ID (colleagues, APEX companies, contractors). No internet exposure. |
+| Publicly accessible container app | `infrastructure/publicly-accessible-container-app/` | The same app published to the internet through Front Door Premium and WAF, still behind Entra sign-in |
+| Virtual network | `infrastructure/virtual-network/` | A standalone VNet with subnets, NSGs and routing, deployed on its own |
+| Virtual machine | `infrastructure/virtual-machine/` | Standalone Azure VMs deployed into an existing subnet |
 
 ## Already in place
 
@@ -15,6 +26,8 @@ All three infrastructure designs in this repository are proofs of concept, writt
 - **Governed:** mandatory governance tags, naming convention, delete locks, budgets and least-privilege viewer and operator roles.
 - **Monitored:** all three designs include full monitoring by default. One switch, `enable_monitoring`, turns all of it off per environment (for example in dev to save cost); it cannot be off in prod.
 - **Pinned:** provider versions are pinned and lock files are committed.
+- **Resilient by parameter:** region (`location`) is required per environment; availability-zone redundancy is a variable wherever the service supports it (on in uat and prod); the Terraform state storage is GZRS by default; subnet prefixes come from tfvars and subnet names from the naming module.
+- **Diagrammed:** every template ships its C4 system context and container diagrams in draw.io (`c4-context.drawio`, `c4-containers.drawio`) alongside the Mermaid model in `ARCHITECTURE.md`.
 
 ## Still needed before publishing as golden templates
 

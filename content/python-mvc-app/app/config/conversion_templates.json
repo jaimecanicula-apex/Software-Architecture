@@ -1,0 +1,16 @@
+[
+  {
+    "id": "as-is",
+    "name": "As-is",
+    "description": "Keeps every column exactly as it is in the file."
+  },
+  {
+    "id": "contacts",
+    "name": "Contacts",
+    "description": "Keeps name and email, renamed to full_name and email_address.",
+    "column_mapping": {
+      "name": "full_name",
+      "email": "email_address"
+    }
+  }
+]

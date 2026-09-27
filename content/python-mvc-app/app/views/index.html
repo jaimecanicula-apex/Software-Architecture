@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Convert a CSV file</h1>
+<p class="lede">Upload a CSV file, choose a template, and download the result. Files are processed in memory and never stored.</p>
+
+<form method="post" action="{{ url_for('conversion.convert_upload') }}" enctype="multipart/form-data">
+  <label for="file">CSV file</label>
+  <input id="file" name="file" type="file" accept=".csv" required>
+
+  <fieldset>
+    <legend>Template</legend>
+    {% for template in templates %}
+    <label class="choice">
+      <input type="radio" name="template_id" value="{{ template.template_id }}" {% if loop.first %}checked{% endif %}>
+      <span><strong>{{ template.name }}</strong> {{ template.description }}</span>
+    </label>
+    {% endfor %}
+  </fieldset>
+
+  <label for="output_format">Output format</label>
+  <select id="output_format" name="output_format">
+    {% for output_format in output_formats %}
+    <option value="{{ output_format }}">{{ output_format | upper }}</option>
+    {% endfor %}
+  </select>
+
+  <button type="submit">Convert and download</button>
+</form>
+{% endblock %}

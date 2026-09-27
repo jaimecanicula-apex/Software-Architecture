@@ -1,0 +1,151 @@
+{
+  "id": "c4-context",
+  "name": "C4 L1 System context - private container app",
+  "title": "Privately accessible container app",
+  "subtitle": "C4 level 1: System context",
+  "description": "Internal users on the corporate network reach the app through the hub and sign in with Entra ID; only allowed groups get in. Monitoring viewers read its logs and a platform engineer provisions it with Terraform. Azure DevOps builds and deploys new images after a release approver signs off, and alerts go to email.",
+  "width": 1000,
+  "height": 780,
+  "edges_style": "straight",
+  "nodes": [
+    {
+      "id": "b",
+      "kind": "boundary",
+      "label": "Private container app · one per environment",
+      "x": 300,
+      "y": 250,
+      "w": 400,
+      "h": 320
+    },
+    {
+      "label": "Private container app",
+      "text": "Generic internal web app,\nEntra sign-in, monitoring",
+      "icon": "container-app",
+      "id": "sys",
+      "kind": "system",
+      "tech": "software system",
+      "x": 380,
+      "y": 335,
+      "w": 240,
+      "h": 150
+    },
+    {
+      "id": "user",
+      "kind": "person",
+      "label": "Internal user",
+      "text": "Member of an allowed\nEntra group",
+      "x": 68,
+      "y": 180
+    },
+    {
+      "id": "viewer",
+      "kind": "person",
+      "label": "Monitoring viewer",
+      "text": "Support, service owner",
+      "x": 68,
+      "y": 370
+    },
+    {
+      "id": "engineer",
+      "kind": "person",
+      "label": "Platform engineer",
+      "text": "Runs Terraform per environment",
+      "x": 68,
+      "y": 560
+    },
+    {
+      "id": "hub",
+      "kind": "external",
+      "label": "Hub network + DNS",
+      "text": "Owned by the platform team",
+      "icon": "virtual-network",
+      "x": 770,
+      "y": 150,
+      "w": 200,
+      "h": 80
+    },
+    {
+      "id": "entra",
+      "kind": "external",
+      "label": "Microsoft Entra ID",
+      "text": "Tenant, app registration, groups",
+      "icon": "groups",
+      "x": 770,
+      "y": 290,
+      "w": 200,
+      "h": 80
+    },
+    {
+      "id": "email",
+      "kind": "external",
+      "label": "Email recipients",
+      "text": "Alerts, budget warnings",
+      "icon": "alerts",
+      "x": 770,
+      "y": 430,
+      "w": 200,
+      "h": 80
+    },
+    {
+      "id": "devops",
+      "kind": "external",
+      "label": "Azure DevOps",
+      "text": "Repository, pipeline, approvals",
+      "icon": "azure-devops",
+      "x": 770,
+      "y": 570,
+      "w": 200,
+      "h": 80
+    },
+    {
+      "id": "approver",
+      "kind": "person",
+      "label": "Release approver",
+      "text": "Approves deployments",
+      "x": 478,
+      "y": 640
+    }
+  ],
+  "edges": [
+    {
+      "from": "user",
+      "to": "hub",
+      "label": "Opens the internal URL (HTTPS)"
+    },
+    {
+      "from": "hub",
+      "to": "sys",
+      "label": "Routes via peering, private DNS"
+    },
+    {
+      "from": "viewer",
+      "to": "sys",
+      "label": "Reads logs and metrics"
+    },
+    {
+      "from": "engineer",
+      "to": "sys",
+      "label": "Provisions with Terraform"
+    },
+    {
+      "from": "sys",
+      "to": "entra",
+      "label": "Signs users in (OIDC)"
+    },
+    {
+      "from": "sys",
+      "to": "email",
+      "label": "Sends alerts"
+    },
+    {
+      "from": "devops",
+      "to": "sys",
+      "label": "Builds and deploys images"
+    },
+    {
+      "from": "approver",
+      "to": "devops",
+      "label": "Approves Deploy stage"
+    }
+  ]
+}

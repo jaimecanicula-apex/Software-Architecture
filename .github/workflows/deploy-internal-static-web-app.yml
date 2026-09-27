@@ -1,6 +1,6 @@
 # Delivery option A for the PRIVATELY accessible site: GitHub + GitHub Actions
 #
-# Deploys app-internal/ to the private Azure Static Web App (public network
+# Deploys content/privately-accessible-static-website/ to the private Azure Static Web App (public network
 # access off, APEX Entra sign-in). The site stays private; only the upload uses
 # the Static Web Apps deployment service.
 #   - Pull request to main (opened, synchronize, reopened): create or update a preview environment
@@ -19,7 +19,7 @@ name: Deploy internal Azure Static Web App
 on:
   push:
     branches: [main]
-    paths: ["app-internal/**", ".github/workflows/deploy-internal-static-web-app.yml"]
+    paths: ["content/privately-accessible-static-website/**", ".github/workflows/deploy-internal-static-web-app.yml"]
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches: [main]
@@ -45,7 +45,7 @@ jobs:
 
       - name: Check the site files are present
         run: |
-          for f in app-internal/index.html app-internal/styles.css app-internal/main.js app-internal/healthz.html; do
+          for f in content/privately-accessible-static-website/index.html content/privately-accessible-static-website/styles.css content/privately-accessible-static-website/main.js content/privately-accessible-static-website/healthz.html; do
             test -f "$f" || { echo "::error::Missing $f"; exit 1; }
           done
 
@@ -54,8 +54,8 @@ jobs:
           SWA_CONFIG_JSON: ${{ secrets.SWA_CONFIG_JSON }}
         run: |
           test -n "$SWA_CONFIG_JSON" || { echo "::error::SWA_CONFIG_JSON secret is empty"; exit 1; }
-          printf '%s' "$SWA_CONFIG_JSON" > app-internal/staticwebapp.config.json
-          python3 -m json.tool app-internal/staticwebapp.config.json > /dev/null
+          printf '%s' "$SWA_CONFIG_JSON" > content/privately-accessible-static-website/staticwebapp.config.json
+          python3 -m json.tool content/privately-accessible-static-website/staticwebapp.config.json > /dev/null
 
       - name: Deploy to Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
@@ -63,7 +63,7 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_INTERNAL }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
-          app_location: app-internal
+          app_location: content/privately-accessible-static-website
           api_location: ""
           output_location: ""
           skip_app_build: true

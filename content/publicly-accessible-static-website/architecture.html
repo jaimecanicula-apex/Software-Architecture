@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Architecture · Designed by flow</title>
+  <meta name="description" content="C4 architecture of the static website platform: system context, containers, environments and the Terraform stack.">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="preload" href="assets/fonts/texturina-400-800-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/roboto-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="assets/seal.svg" type="image/svg+xml">
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="seal" viewBox="0 0 100 100">
+      <g>
+        <rect class="seal__body" x="3" y="3" width="94" height="94" rx="4"/>
+        <rect class="seal__line" x="9" y="9" width="82" height="82" rx="2" stroke-width="2.4"/>
+        <rect class="seal__line" x="13" y="13" width="74" height="74" rx="1" stroke-width="0.9"/>
+        <text class="seal__text" x="50" y="33" font-size="11.5" letter-spacing="0.9">DESIGNED</text>
+        <path class="seal__line" d="M21 41.5h19M60 41.5h19" stroke-width="1.2"/>
+        <text class="seal__text" x="50" y="45.4" font-size="10" letter-spacing="1">BY</text>
+        <text class="seal__text" x="50" y="73" font-size="27" letter-spacing="0.5">FLOW</text>
+      </g>
+    </symbol>
+  </svg>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 10 5 0 10z" fill="#1c1c1c"/>
+      </marker>
+      <pattern id="shell" width="70" height="70" patternUnits="userSpaceOnUse">
+        <image href="assets/eggshell.svg" width="70" height="70"/>
+      </pattern>
+    </defs>
+  </svg>
+
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="masthead" data-open="false">
+    <div class="wrap masthead__row">
+      <a class="brand" href="index.html" aria-label="Designed by flow, home">
+        <svg class="brand__seal" viewBox="0 0 100 100" aria-hidden="true"><use href="#seal"/></svg>
+        <span class="brand__name">Designed by flow</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        <span class="nav-toggle__bars" aria-hidden="true"></span>
+        <span class="nav-toggle__label">Menu</span>
+      </button>
+      <nav id="site-nav" class="nav" aria-label="Primary">
+        <ul>
+          <li><a href="index.html#how">How it works</a></li>
+          <li><a href="index.html#going-live">Going live</a></li>
+          <li><a href="index.html#delivery">Delivery</a></li>
+          <li><a href="index.html#principles">Principles</a></li>
+          <li><a href="architecture.html" aria-current="page">Architecture</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="arch-hero" id="arch-top" aria-labelledby="arch-title">
+      <div class="wrap">
+        <h1 id="arch-title">How the platform is built.</h1>
+        <p class="lede">The architecture of the static website platform, drawn in the C4 model: who uses it, what runs, and how the Terraform that builds it is organised. One stack, deployed separately to dev, QA, UAT and production.</p>
+        <nav class="arch-toc" aria-label="On this page">
+          <a href="#context">C4 level 1: System context</a>
+          <a href="#containers">C4 level 2: Containers</a>
+          <a href="#environments">Environments</a>
+          <a href="#monitoring">Monitoring</a>
+          <a href="#terraform">C4 level 3: Terraform stack</a>
+          <a href="#prerequisites">Prerequisites</a>
+        </nav>
+      </div>
+    </section>
+
+    <section class="arch-section" id="context" aria-labelledby="context-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="context-title">Who and what it touches.</h2>
+          <p>C4 level 1, system context. The website is one software system per environment. People use it in three ways, and it depends on four systems it does not own.</p>
+        </div>
+        <figure class="diagram" aria-labelledby="context-caption">
+          <div class="diagram__scroll" tabindex="0" aria-label="Diagram, scroll sideways on small screens">
+            <svg class="c4" viewBox="0 0 1000 520" role="img" aria-labelledby="ctx-t ctx-d">
+<title id="ctx-t">System context</title>
+<desc id="ctx-d">Visitors browse the static website over HTTPS. Monitoring viewers open its dashboard. A platform engineer provisions it with Terraform. A delivery pipeline uploads content, a DNS provider routes custom domains, Entra ID authorizes viewers, and alerts go to notification channels.</desc>
+<g class="c4-boundary">
+<rect x="330" y="150" width="340" height="230" rx="10"/>
+<text x="344" y="172">Static website system · one per environment</text>
+</g>
+<g class="c4-box c4-box--system">
+<rect x="380" y="200" width="240" height="140" rx="6"/>
+<image class="c4-icon" href="assets/azure/static-web-app.svg" x="488.0" y="225.0" width="24" height="24"/>
+<text class="c4-title" x="500.0" y="265.0">Static website on Azure</text>
+<text class="c4-sub" x="500.0" y="283.0">Edge firewall, hosting</text>
+<text class="c4-sub" x="500.0" y="298.0">and monitoring</text>
+<text class="c4-tag" x="500.0" y="315.0">[software system]</text>
+</g>
+<g class="c4-person">
+<image href="assets/azure/users.svg" x="68" y="58" width="44" height="44"/>
+<text class="c4-title" x="90" y="128">Website visitor</text>
+<text class="c4-sub" x="90" y="144">Anonymous public</text>
+</g>
+<g class="c4-person">
+<image href="assets/azure/users.svg" x="68" y="228" width="44" height="44"/>
+<text class="c4-title" x="90" y="298">Monitoring viewer</text>
+<text class="c4-sub" x="90" y="314">Support, owners, security</text>
+</g>
+<g class="c4-person">
+<image href="assets/azure/users.svg" x="68" y="398" width="44" height="44"/>
+<text class="c4-title" x="90" y="468">Platform engineer</text>
+<text class="c4-sub" x="90" y="484">Runs Terraform</text>
+</g>
+<g class="c4-box c4-box--ext">
+<rect x="770" y="40" width="200" height="70" rx="6"/>
+<image class="c4-icon" href="assets/azure/azure-devops.svg" x="858.0" y="46.0" width="24" height="24"/>
+<text class="c4-title" x="870.0" y="86.0">Delivery pipeline</text>
+<text class="c4-sub" x="870.0" y="104.0">GitHub Actions or Azure Pipelines</text>
+</g>
+<g class="c4-box c4-box--ext">
+<rect x="770" y="160" width="200" height="70" rx="6"/>
+<image class="c4-icon" href="assets/azure/dns-zones.svg" x="858.0" y="166.0" width="24" height="24"/>
+<text class="c4-title" x="870.0" y="206.0">DNS provider</text>
+<text class="c4-sub" x="870.0" y="224.0">Registrar or Azure DNS</text>
+</g>
+<g class="c4-box c4-box--ext">
+<rect x="770" y="300" width="200" height="70" rx="6"/>
+<image class="c4-icon" href="assets/azure/groups.svg" x="858.0" y="306.0" width="24" height="24"/>
+<text class="c4-title" x="870.0" y="346.0">Microsoft Entra ID</text>
+<text class="c4-sub" x="870.0" y="364.0">Identities and groups</text>
+</g>
+<g class="c4-box c4-box--ext">
+<rect x="770" y="420" width="200" height="70" rx="6"/>
+<image class="c4-icon" href="assets/azure/alerts.svg" x="858.0" y="426.0" width="24" height="24"/>
+<text class="c4-title" x="870.0" y="466.0">Notification channels</text>
+<text class="c4-sub" x="870.0" y="484.0">Email, Teams, ITSM</text>
+</g>
+<path class="c4-edge" d="M118 88 L378 232" marker-end="url(#arrow)"/>
+<text class="c4-label" x="255" y="150" text-anchor="middle">Browses over HTTPS</text>
+<path class="c4-edge" d="M118 258 L378 270" marker-end="url(#arrow)"/>
+<text class="c4-label" x="250" y="252" text-anchor="middle">Opens dashboard, queries logs</text>
+<path class="c4-edge" d="M118 420 L378 310" marker-end="url(#arrow)"/>
+<text class="c4-label" x="250" y="380" text-anchor="middle">Provisions with Terraform</text>
+<path class="c4-edge" d="M768 84 L622 222" marker-end="url(#arrow)"/>
+<text class="c4-label" x="700" y="135" text-anchor="middle">Uploads the site content</text>
+<path class="c4-edge" d="M768 195 L622 252" marker-end="url(#arrow)"/>
+<text class="c4-label" x="700" y="212" text-anchor="middle">Routes custom domains</text>
+<path class="c4-edge" d="M622 290 L768 330" marker-end="url(#arrow)"/>
+<text class="c4-label" x="700" y="296" text-anchor="middle">Authorizes by group</text>
+<path class="c4-edge" d="M622 322 L768 448" marker-end="url(#arrow)"/>
+<text class="c4-label" x="700" y="404" text-anchor="middle">Sends alerts</text>
+</svg>
+          </div>
+          <figcaption id="context-caption" class="legend">
+            <span class="legend__item"><span class="legend__swatch legend__swatch--system"></span>This system</span>
+            <span class="legend__item"><span class="legend__swatch"></span>Part of this system</span>
+            <span class="legend__item"><span class="legend__swatch legend__swatch--ext"></span>External, not owned</span>
+            <span class="legend__item"><img class="legend__icon" src="assets/azure/users.svg" alt="" width="18" height="18">Person</span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="arch-section" id="containers" aria-labelledby="containers-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="containers-title">What runs in each environment.</h2>
+          <p>C4 level 2, containers. Every request passes the firewall and Front Door before it reaches the site. Everything reports into one Log Analytics workspace, which drives the alerts and the dashboard.</p>
+        </div>
+        <figure class="diagram" aria-labelledby="containers-caption">
+          <div class="diagram__scroll" tabindex="0" aria-label="Diagram, scroll sideways on small screens">
+            <svg class="c4" viewBox="0 0 1000 710" role="img" aria-labelledby="con-t con-d">
+<title id="con-t">Container view</title>
+<desc id="con-d">Inside one environment&#x27;s resource group: requests pass the WAF and Front Door, then reach the Static Web App with the Front Door ID header. Application Insights probes the public URLs. Front Door and test results feed Log Analytics, which the alerts and the workbook dashboard query. Alerts fire through the Action Group to email and webhooks.</desc>
+<g class="c4-boundary">
+<rect x="200" y="20" width="780" height="600" rx="10"/>
+<text x="214" y="42">Resource group · rg-&lt;workload&gt;-&lt;env&gt;-&lt;region&gt;-001</text>
+</g>
+<g class="c4-boundary">
+<rect x="225" y="60" width="350" height="165" rx="10"/>
+<text x="239" y="82">Edge · global</text>
+</g>
+<g class="c4-box">
+<rect x="245" y="100" width="110" height="105" rx="6"/>
+<image class="c4-icon" href="assets/azure/waf.svg" x="288.0" y="107.5" width="24" height="24"/>
+<text class="c4-title" x="300.0" y="147.5">WAF policy</text>
+<text class="c4-sub" x="300.0" y="165.5">Rate limit, geo</text>
+<text class="c4-sub" x="300.0" y="180.5">block, managed</text>
+<text class="c4-sub" x="300.0" y="195.5">rules</text>
+</g>
+<g class="c4-box">
+<rect x="380" y="100" width="175" height="105" rx="6"/>
+<image class="c4-icon" href="assets/azure/front-door.svg" x="455.5" y="107.5" width="24" height="24"/>
+<text class="c4-title" x="467.5" y="147.5">Azure Front Door</text>
+<text class="c4-sub" x="467.5" y="165.5">TLS, custom domains,</text>
+<text class="c4-sub" x="467.5" y="180.5">HTTPS redirect, caching,</text>
+<text class="c4-sub" x="467.5" y="195.5">security headers</text>
+</g>
+<g class="c4-box">
+<rect x="700" y="100" width="255" height="105" rx="6"/>
+<image class="c4-icon" href="assets/azure/static-web-app.svg" x="815.5" y="107.5" width="24" height="24"/>
+<text class="c4-title" x="827.5" y="147.5">Azure Static Web App</text>
+<text class="c4-sub" x="827.5" y="165.5">Serves the build-free site</text>
+<text class="c4-sub" x="827.5" y="180.5">folder; accepts Front Door</text>
+<text class="c4-sub" x="827.5" y="195.5">traffic only</text>
+</g>
+<g class="c4-boundary">
+<rect x="225" y="285" width="730" height="320" rx="10"/>
+<text x="239" y="307">Monitoring · optional, always on in prod</text>
+</g>
+<g class="c4-box">
+<rect x="245" y="325" width="200" height="95" rx="6"/>
+<image class="c4-icon" href="assets/azure/application-insights.svg" x="333.0" y="335.5" width="24" height="24"/>
+<text class="c4-title" x="345.0" y="375.5">Application Insights</text>
+<text class="c4-sub" x="345.0" y="393.5">Availability tests from</text>
+<text class="c4-sub" x="345.0" y="408.5">5 regions, cert expiry</text>
+</g>
+<g class="c4-box">
+<rect x="495" y="325" width="200" height="95" rx="6"/>
+<image class="c4-icon" href="assets/azure/log-analytics.svg" x="583.0" y="335.5" width="24" height="24"/>
+<text class="c4-title" x="595.0" y="375.5">Log Analytics</text>
+<text class="c4-sub" x="595.0" y="393.5">Edge logs, WAF logs,</text>
+<text class="c4-sub" x="595.0" y="408.5">metrics, test results</text>
+</g>
+<g class="c4-box">
+<rect x="745" y="325" width="190" height="95" rx="6"/>
+<image class="c4-icon" href="assets/azure/alerts.svg" x="828.0" y="335.5" width="24" height="24"/>
+<text class="c4-title" x="840.0" y="375.5">Azure Monitor alerts</text>
+<text class="c4-sub" x="840.0" y="393.5">Metric, log, activity,</text>
+<text class="c4-sub" x="840.0" y="408.5">health, budget</text>
+</g>
+<g class="c4-box">
+<rect x="495" y="490" width="200" height="90" rx="6"/>
+<image class="c4-icon" href="assets/azure/workbook.svg" x="583.0" y="498.0" width="24" height="24"/>
+<text class="c4-title" x="595.0" y="538.0">Workbook dashboard</text>
+<text class="c4-sub" x="595.0" y="556.0">Availability, traffic,</text>
+<text class="c4-sub" x="595.0" y="571.0">latency, WAF</text>
+</g>
+<g class="c4-box">
+<rect x="745" y="490" width="190" height="90" rx="6"/>
+<image class="c4-icon" href="assets/azure/monitor.svg" x="828.0" y="506.0" width="24" height="24"/>
+<text class="c4-title" x="840.0" y="546.0">Action Group</text>
+<text class="c4-sub" x="840.0" y="564.0">Routes every alert</text>
+</g>
+<g class="c4-person">
+<image href="assets/azure/users.svg" x="58" y="128" width="44" height="44"/>
+<text class="c4-title" x="80" y="198">Website visitor</text>
+<text class="c4-sub" x="80" y="214">Anonymous public</text>
+</g>
+<g class="c4-person">
+<image href="assets/azure/users.svg" x="58" y="498" width="44" height="44"/>
+<text class="c4-title" x="80" y="568">Monitoring viewer</text>
+<text class="c4-sub" x="80" y="584">Reader roles</text>
+</g>
+<g class="c4-box c4-box--ext">
+<rect x="20" y="280" width="160" height="80" rx="6"/>
+<image class="c4-icon" href="assets/azure/azure-devops.svg" x="88.0" y="291.0" width="24" height="24"/>
+<text class="c4-title" x="100.0" y="331.0">Delivery pipeline</text>
+<text class="c4-sub" x="100.0" y="349.0">GitHub or Azure DevOps</text>
+</g>
+<g class="c4-box c4-box--ext">
+<rect x="745" y="640" width="190" height="60" rx="6"/>
+<text class="c4-title" x="840.0" y="667.0">Notification channels</text>
+<text class="c4-sub" x="840.0" y="685.0">Email, webhooks</text>
+</g>
+<path class="c4-edge" d="M108 150 L243 150" marker-end="url(#arrow)"/>
+<text class="c4-label" x="175" y="142" text-anchor="middle">HTTPS</text>
+<path class="c4-edge" d="M357 152 L378 152" marker-end="url(#arrow)"/>
+<path class="c4-edge" d="M557 152 L698 152" marker-end="url(#arrow)"/>
+<text class="c4-label" x="627" y="142" text-anchor="middle">HTTPS + X-Azure-FDID</text>
+<path class="c4-edge" d="M180 320 H300 Q310 320 310 310 V262 Q310 252 320 252 H818 V207" marker-end="url(#arrow)"/>
+<text class="c4-label" x="520" y="245" text-anchor="middle">Deploys the site content</text>
+<path class="c4-edge" d="M330 323 L420 207" marker-end="url(#arrow)"/>
+<text class="c4-label" x="322" y="272" text-anchor="end">Probes public URLs</text>
+<path class="c4-edge" d="M505 207 L580 323" marker-end="url(#arrow)"/>
+<text class="c4-label" x="560" y="275" text-anchor="start">Logs + metrics</text>
+<path class="c4-edge" d="M447 372 L493 372" marker-end="url(#arrow)"/>
+<path class="c4-edge" d="M743 372 L697 372" marker-end="url(#arrow)"/>
+<path class="c4-edge" d="M840 422 L840 488" marker-end="url(#arrow)"/>
+<text class="c4-label" x="850" y="460" text-anchor="start">Fires</text>
+<path class="c4-edge" d="M840 582 L840 638" marker-end="url(#arrow)"/>
+<text class="c4-label" x="850" y="615" text-anchor="start">Email, webhook</text>
+<path class="c4-edge" d="M595 488 L595 422" marker-end="url(#arrow)"/>
+<text class="c4-label" x="605" y="460" text-anchor="start">Queries</text>
+<path class="c4-edge" d="M108 530 L493 535" marker-end="url(#arrow)"/>
+<text class="c4-label" x="300" y="522" text-anchor="middle">Opens with Reader roles</text>
+</svg>
+          </div>
+          <figcaption id="containers-caption" class="diagram__note">Front Door and its WAF are optional per environment. Without them, visitors reach the Static Web App directly and the edge alerts and panels are not created.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="arch-section arch-section--dense" id="environments" aria-labelledby="environments-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="environments-title">Four environments, one stack.</h2>
+          <p>Each environment has its own settings file, its own state and, if needed, its own Azure subscription. These are the defaults.</p>
+        </div>
+        <div class="table-wrap" tabindex="0">
+          <table class="env-table">
+            <thead>
+              <tr><th scope="col">Setting</th><th scope="col">Dev</th><th scope="col">QA</th><th scope="col">UAT</th><th scope="col">Production</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Subscription</th><td>Own</td><td>Own</td><td>Own</td><td>Own</td></tr>
+              <tr><th scope="row">Front Door</th><td>Off, to save cost</td><td>Standard</td><td>Premium</td><td>Premium</td></tr>
+              <tr><th scope="row">Web application firewall</th><td>None</td><td>Logs only</td><td>Blocks, with managed rules</td><td>Blocks, with managed rules</td></tr>
+              <tr><th scope="row">Static Web App</th><td>Free</td><td>Standard</td><td>Standard</td><td>Standard</td></tr>
+              <tr><th scope="row">Pull-request previews</th><td>On</td><td>On</td><td>Off</td><td>Off</td></tr>
+              <tr><th scope="row">Monitoring</th><td>On</td><td>On</td><td>On</td><td>Always on</td></tr>
+              <tr><th scope="row">Log retention</th><td>30 days</td><td>30 days</td><td>90 days</td><td>180 days</td></tr>
+              <tr><th scope="row">Delete lock</th><td>No</td><td>No</td><td>Yes</td><td>Yes</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="arch-section" id="monitoring" aria-labelledby="monitoring-title">
+      <div class="wrap monitor-grid">
+        <div>
+          <h2 id="monitoring-title">Watched from five regions.</h2>
+          <p class="monitor-lede">Every environment, dev included, gets the full monitoring set. Viewers and operators are Entra ID groups, and their access is limited to that environment.</p>
+          <dl class="roles">
+            <div><dt>Viewers</dt><dd>Open the dashboard, query logs, see metrics and alerts.</dd></div>
+            <div><dt>Operators</dt><dd>Everything viewers can do, plus change alerts, action groups and dashboards.</dd></div>
+          </dl>
+        </div>
+        <dl class="rules signals">
+          <div><dt>Availability</dt><dd>Tests from five regions on every public URL; alerts below the threshold.</dd></div>
+          <div><dt>Certificates</dt><dd>Tests fail when a TLS certificate has fewer than 14 days left.</dd></div>
+          <div><dt>Origin health</dt><dd>Alerts when Front Door cannot reach the site reliably.</dd></div>
+          <div><dt>Errors and latency</dt><dd>5xx rate, 4xx rate and edge latency, each with its own threshold.</dd></div>
+          <div><dt>Firewall</dt><dd>Alerts on a spike in blocked requests: an attack, or a rule to tune.</dd></div>
+          <div><dt>Risky changes</dt><dd>Deletions, firewall changes, new role assignments and removed locks.</dd></div>
+          <div><dt>Health and cost</dt><dd>Resource and service health, plus a monthly budget with forecast alerts.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="arch-section" id="terraform" aria-labelledby="terraform-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="terraform-title">How the Terraform is organised.</h2>
+          <p>C4 level 3, components of the infrastructure code. One root module composes five reusable modules. A wrapper script picks the environment, so a plan for one environment can never use another's state.</p>
+        </div>
+        <figure class="diagram" aria-labelledby="terraform-caption">
+          <div class="diagram__scroll" tabindex="0" aria-label="Diagram, scroll sideways on small screens">
+            <svg class="c4" viewBox="0 0 1000 590" role="img" aria-labelledby="tfc-t tfc-d">
+<title id="tfc-t">Terraform stack components</title>
+<desc id="tfc-d">A platform engineer runs tf.sh or tf.ps1, which passes the environment&#x27;s terraform.tfvars and backend.hcl to the root module. State is stored in the bootstrap storage account. The root module&#x27;s main.tf composes the naming, static-web-app, front-door, front-door-waf and monitoring modules and renders the per-environment config template into outputs.</desc>
+<g class="c4-person">
+<image href="assets/azure/users.svg" x="48" y="58" width="44" height="44"/>
+<text class="c4-title" x="70" y="128">Platform engineer</text>
+<text class="c4-sub" x="70" y="144">Runs plans and applies</text>
+</g>
+<g class="c4-box">
+<rect x="150" y="50" width="200" height="72" rx="6"/>
+<image class="c4-icon" href="assets/azure/dev-console.svg" x="238.0" y="49.0" width="24" height="24"/>
+<text class="c4-title" x="250.0" y="89.0">tf.sh · tf.ps1</text>
+<text class="c4-sub" x="250.0" y="107.0">Picks the environment,</text>
+<text class="c4-sub" x="250.0" y="122.0">isolates .terraform</text>
+</g>
+<g class="c4-boundary">
+<rect x="420" y="15" width="270" height="140" rx="10"/>
+<text x="434" y="37">environments/&lt;env&gt;/</text>
+</g>
+<g class="c4-box">
+<rect x="438" y="55" width="115" height="80" rx="6"/>
+<image class="c4-icon" href="assets/azure/subscription.svg" x="483.5" y="58.0" width="24" height="24"/>
+<text class="c4-title" x="495.5" y="98.0">terraform.tfvars</text>
+<text class="c4-sub" x="495.5" y="116.0">Subscription, SKUs,</text>
+<text class="c4-sub" x="495.5" y="131.0">domains, groups</text>
+</g>
+<g class="c4-box">
+<rect x="565" y="55" width="110" height="80" rx="6"/>
+<text class="c4-title" x="620.0" y="92.0">backend.hcl</text>
+<text class="c4-sub" x="620.0" y="110.0">State location</text>
+</g>
+<g class="c4-box">
+<path d="M770 59 a100.0 9 0 0 1 200 0 v72 a100.0 9 0 0 1 -200 0 z"/>
+<path class="c4-rim" d="M770 59 a100.0 9 0 0 0 200 0"/>
+<image href="assets/azure/storage-account.svg" x="859.0" y="65" width="22" height="22"/>
+<text class="c4-title" x="870.0" y="107.0">Terraform state</text>
+<text class="c4-sub" x="870.0" y="123.0">Storage from bootstrap/</text>
+</g>
+<g class="c4-boundary">
+<rect x="150" y="190" width="810" height="140" rx="10"/>
+<text x="164" y="212">stacks/static-website · root module</text>
+</g>
+<g class="c4-box">
+<rect x="170" y="235" width="250" height="75" rx="6"/>
+<image class="c4-icon" href="assets/azure/resource-group.svg" x="283.0" y="235.5" width="24" height="24"/>
+<text class="c4-title" x="295.0" y="275.5">main.tf</text>
+<text class="c4-sub" x="295.0" y="293.5">Resource group, tags,</text>
+<text class="c4-sub" x="295.0" y="308.5">delete lock, budget</text>
+</g>
+<g class="c4-box">
+<rect x="450" y="235" width="220" height="75" rx="6"/>
+<text class="c4-title" x="560.0" y="261.5">Config template</text>
+<text class="c4-sub" x="560.0" y="279.5">Origin lock + CSP</text>
+<text class="c4-sub" x="560.0" y="294.5">per environment</text>
+</g>
+<g class="c4-box">
+<rect x="700" y="235" width="240" height="75" rx="6"/>
+<text class="c4-title" x="820.0" y="261.5">outputs.tf</text>
+<text class="c4-sub" x="820.0" y="279.5">URL, deploy token, DNS</text>
+<text class="c4-sub" x="820.0" y="294.5">records, dashboard link</text>
+</g>
+<g class="c4-boundary">
+<rect x="30" y="380" width="940" height="190" rx="10"/>
+<text x="44" y="402">modules/</text>
+</g>
+<g class="c4-box">
+<rect x="50" y="425" width="170" height="110" rx="6"/>
+<image class="c4-icon" href="assets/azure/tag.svg" x="123.0" y="435.0" width="24" height="24"/>
+<text class="c4-title" x="135.0" y="475.0">naming</text>
+<text class="c4-sub" x="135.0" y="493.0">CAF names:</text>
+<text class="c4-sub" x="135.0" y="508.0">type-workload-env-</text>
+<text class="c4-sub" x="135.0" y="523.0">region-instance</text>
+</g>
+<g class="c4-box">
+<rect x="235" y="425" width="170" height="110" rx="6"/>
+<image class="c4-icon" href="assets/azure/static-web-app.svg" x="308.0" y="443.0" width="24" height="24"/>
+<text class="c4-title" x="320.0" y="483.0">static-web-app</text>
+<text class="c4-sub" x="320.0" y="501.0">Hosting, Free or</text>
+<text class="c4-sub" x="320.0" y="516.0">Standard tier</text>
+</g>
+<g class="c4-box">
+<rect x="420" y="425" width="170" height="110" rx="6"/>
+<image class="c4-icon" href="assets/azure/front-door.svg" x="493.0" y="435.0" width="24" height="24"/>
+<text class="c4-title" x="505.0" y="475.0">front-door</text>
+<text class="c4-sub" x="505.0" y="493.0">Routing, TLS,</text>
+<text class="c4-sub" x="505.0" y="508.0">custom domains,</text>
+<text class="c4-sub" x="505.0" y="523.0">security headers</text>
+</g>
+<g class="c4-box">
+<rect x="605" y="425" width="170" height="110" rx="6"/>
+<image class="c4-icon" href="assets/azure/waf.svg" x="678.0" y="443.0" width="24" height="24"/>
+<text class="c4-title" x="690.0" y="483.0">front-door-waf</text>
+<text class="c4-sub" x="690.0" y="501.0">Firewall rules and</text>
+<text class="c4-sub" x="690.0" y="516.0">security policy</text>
+</g>
+<g class="c4-box c4-box--optional">
+<rect x="790" y="425" width="170" height="110" rx="6"/>
+<image class="c4-icon" href="assets/azure/monitor.svg" x="863.0" y="443.0" width="24" height="24"/>
+<text class="c4-title" x="875.0" y="483.0">monitoring</text>
+<text class="c4-sub" x="875.0" y="501.0">Logs, tests, alerts,</text>
+<text class="c4-sub" x="875.0" y="516.0">dashboard, access</text>
+</g>
+<path class="c4-edge" d="M98 82 L148 84" marker-end="url(#arrow)"/>
+<path class="c4-edge" d="M352 90 L436 95" marker-end="url(#arrow)"/>
+<text class="c4-label" x="394" y="84" text-anchor="middle">-var-file</text>
+<path class="c4-edge" d="M250 48 V32 Q250 26 256 26 H614 Q620 26 620 32 V53" marker-end="url(#arrow)"/>
+<text class="c4-label" x="440" y="20" text-anchor="middle">-backend-config</text>
+<path class="c4-edge" d="M677 95 L768 95" marker-end="url(#arrow)"/>
+<text class="c4-label" x="722" y="86" text-anchor="middle">Stores state</text>
+<path class="c4-edge" d="M495 137 L300 233" marker-end="url(#arrow)"/>
+<text class="c4-label" x="385" y="175" text-anchor="end">Configures</text>
+<path class="c4-edge" d="M422 272 L448 272" marker-end="url(#arrow)"/>
+<path class="c4-edge" d="M672 272 L698 272" marker-end="url(#arrow)"/>
+<path class="c4-edge" d="M295 312 V400 M135 400 H875"/>
+<path class="c4-edge" d="M135 400 V423" marker-end="url(#arrow)"/>
+<path class="c4-edge" d="M320 400 V423" marker-end="url(#arrow)"/>
+<path class="c4-edge" d="M505 400 V423" marker-end="url(#arrow)"/>
+<path class="c4-edge" d="M690 400 V423" marker-end="url(#arrow)"/>
+<path class="c4-edge" d="M875 400 V423" marker-end="url(#arrow)"/>
+<text class="c4-label" x="305" y="360" text-anchor="start">Composes</text>
+</svg>
+          </div>
+          <figcaption id="terraform-caption" class="diagram__note">State for each environment lives in a storage account created once by <code>infrastructure/publicly-accessible-static-website/bootstrap</code>, with Entra ID sign-in only, versioning and soft delete. Dashed modules exist only when <code>enable_monitoring</code> is on, which it always is in prod.</figcaption>
+        </figure>
+      </div>
+    </section>
+    <section class="arch-section" id="prerequisites" aria-labelledby="prerequisites-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="prerequisites-title">Before the first deployment.</h2>
+          <p>Everything that must be in place before the first deployment. Nothing has been applied to Azure yet, so dev is the first real test.</p>
+        </div>
+        <dl class="rules signals">
+          <div><dt>Tools</dt><dd>Terraform 1.9 or later, Azure CLI to sign in, Bash or PowerShell for the wrapper script, and Git.</dd></div>
+          <div><dt>Subscriptions</dt><dd>Best one per environment; at minimum production on its own, with dev, QA and UAT sharing one. If they share, turn on <code>enable_service_health_alert</code> and <code>export_activity_log</code> in only one of them. Use a Static Web Apps region (<code>westus2</code>, <code>centralus</code>, <code>eastus2</code>, <code>westeurope</code> or <code>eastasia</code>) and a billing type that supports budgets. The Web, CDN, monitoring, storage and cost services must be registered.</dd></div>
+          <div><dt>Terraform state</dt><dd>Run <code>bootstrap/</code> once for the state storage account, then copy its output into each <code>backend.hcl</code>.</dd></div>
+          <div><dt>Deploying identity</dt><dd>Contributor, User Access Administrator for the monitoring roles, and Storage Blob Data Contributor on the state account.</dd></div>
+          <div><dt>Settings</dt><dd>In each <code>terraform.tfvars</code>: subscription and tenant IDs, governance tags, alert recipients, viewer and operator groups, and the budget with its contacts, plus custom domains. Replace every <code>&lt;…&gt;</code> placeholder.</dd></div>
+          <div><dt>Delivery pipeline</dt><dd>After the first apply, store the deployment token as <code>AZURE_STATIC_WEB_APPS_API_TOKEN</code> (one per environment) and the config output as <code>SWA_CONFIG_JSON</code>. Create the GitHub environments or Azure DevOps variable group used for approvals.</dd></div>
+          <div><dt>Custom domains</dt><dd>Access to the DNS provider to create a TXT validation record and a CNAME per domain. An apex domain needs ALIAS or CNAME flattening.</dd></div>
+          <div><dt>Front Door Premium</dt><dd>Needed in UAT and production for the managed firewall rules; it is the main cost of this design.</dd></div>
+        </dl>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__row">
+      <a class="brand brand--small" href="index.html" aria-label="Designed by flow, home">
+        <svg class="brand__seal" viewBox="0 0 100 100" aria-hidden="true"><use href="#seal"/></svg>
+        <span class="brand__name">Designed by flow</span>
+      </a>
+      <nav class="footer__nav" aria-label="Footer">
+        <a href="index.html#how">How it works</a>
+        <a href="index.html#going-live">Going live</a>
+        <a href="index.html#delivery">Delivery</a>
+        <a href="index.html#principles">Principles</a>
+        <a href="architecture.html">Architecture</a>
+      </nav>
+    </div>
+    <p class="wrap footer__note">Proof of concept. Each client deployment replaces the name, wording, branding and content with its own approved material.</p>
+  </footer>
+
+  <script src="main.js" defer></script>
+</body>
+</html>

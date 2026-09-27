@@ -1,0 +1,111 @@
+# Delivery option B for the PRIVATELY accessible site: Azure Repos + Azure Pipelines
+#
+# Deploys content/privately-accessible-static-website/ to the private Static Web App (public network access off,
+# APEX Entra sign-in). The build writes the sign-in config from SWA_CONFIG_JSON.
+#
+# Build stage:   checks content/privately-accessible-static-website/, writes staticwebapp.config.json and publishes it as the "site" artifact.
+# Preview stage: pull request validation builds (triggered by the main branch policy)
+#                deploy the artifact to a named preview environment, pr<id>.
+# Release stage: runs on main only, waits for the approval check on the
+#                "swa-internal-production" environment, then deploys to production.
+#
+# The Function API, documents and infrastructure are released separately, so
+# api_location is deliberately empty and there is no app build.
+#
+# One-time setup in Azure DevOps:
+#   1. Variable group "swa-internal-deployment" with secret variables
+#      AZURE_STATIC_WEB_APPS_API_TOKEN (terraform output static_web_app_deployment_token)
+#      and SWA_CONFIG_JSON (terraform output staticwebapp_config_json).
+#   2. Environment "swa-internal-production" with an Approvals check (and any other checks required).
+#   3. Branch policy on main: required reviewers + build validation using this pipeline.
+#
+# Azure Repos has no "pull request closed" trigger. Remove old previews with:
+#   az staticwebapp environment delete --name <static-web-app> --environment-name pr<id>
+
+trigger:
+  branches:
+    include: [main]
+  paths:
+    include: [content/privately-accessible-static-website/*, infrastructure/privately-accessible-static-website/pipelines/azure-pipelines.yml]
+
+# Ignored for Azure Repos; PR builds come from the branch policy on main.
+pr: none
+
+variables:
+  - group: swa-internal-deployment
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: Build
+    displayName: Build
+    jobs:
+      - job: Package
+        displayName: Check and package content/privately-accessible-static-website/
+        steps:
+          - checkout: self
+
+          - bash: |
+              for f in content/privately-accessible-static-website/index.html content/privately-accessible-static-website/styles.css content/privately-accessible-static-website/main.js content/privately-accessible-static-website/healthz.html; do
+                test -f "$f" || { echo "##vso[task.logissue type=error]Missing $f"; exit 1; }
+              done
+            displayName: Check the site files are present
+
+          - bash: |
+              test -n "$SWA_CONFIG_JSON" || { echo "##vso[task.logissue type=error]SWA_CONFIG_JSON is empty"; exit 1; }
+              printf '%s' "$SWA_CONFIG_JSON" > content/privately-accessible-static-website/staticwebapp.config.json
+              python3 -m json.tool content/privately-accessible-static-website/staticwebapp.config.json > /dev/null
+            displayName: Write APEX sign-in config
+            env:
+              SWA_CONFIG_JSON: $(SWA_CONFIG_JSON)
+
+          - publish: content/privately-accessible-static-website
+            artifact: site
+            displayName: Publish site artifact
+
+  - stage: Preview
+    displayName: Preview (pull request)
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - job: DeployPreview
+        displayName: Deploy preview environment
+        steps:
+          - checkout: none
+
+          - download: current
+            artifact: site
+
+          - task: AzureStaticWebApp@0
+            displayName: Deploy to preview pr$(System.PullRequest.PullRequestId)
+            inputs:
+              workingDirectory: $(Pipeline.Workspace)/site
+              app_location: /
+              api_location: ""
+              output_location: ""
+              skip_app_build: true
+              deployment_environment: pr$(System.PullRequest.PullRequestId)
+              azure_static_web_apps_api_token: $(AZURE_STATIC_WEB_APPS_API_TOKEN)
+
+  - stage: Release
+    displayName: Release (production)
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - deployment: DeployProduction
+        displayName: Deploy production
+        environment: swa-internal-production
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureStaticWebApp@0
+                  displayName: Deploy to production
+                  inputs:
+                    workingDirectory: $(Pipeline.Workspace)/site
+                    app_location: /
+                    api_location: ""
+                    output_location: ""
+                    skip_app_build: true
+                    azure_static_web_apps_api_token: $(AZURE_STATIC_WEB_APPS_API_TOKEN)

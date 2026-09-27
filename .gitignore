@@ -1,0 +1,51 @@
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Python, in any folder (the example app, skill scripts)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Secrets and local environment files
+.env
+.env.*
+*.pem
+*.pfx
+*.key
+
+# Terraform. Each template also carries its own .gitignore so it can be copied out alone.
+**/.terraform/
+**/.terraform-*/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+# Keep the provider lock files (.terraform.lock.hcl) committed.
+
+# Bootstrap settings copied from example.tfvars hold real subscription and tenant IDs.
+# (environments/<env>/terraform.tfvars stay committed: they hold placeholders.)
+infrastructure/*/bootstrap/*.tfvars
+!infrastructure/*/bootstrap/example.tfvars
+
+# Claude Code: personal settings stay local; shared settings, skills and agents are committed.
+.claude/settings.local.json
+
+# Impeccable: per-machine hook cache
+.impeccable/hook.cache.json
+
+# draw.io backups and temporary files
+*.drawio.bkp
+*.drawio.dtmp
+.$*.bkp
