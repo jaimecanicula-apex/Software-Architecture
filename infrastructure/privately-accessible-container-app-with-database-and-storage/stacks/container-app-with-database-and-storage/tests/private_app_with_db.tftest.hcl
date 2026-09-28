@@ -45,8 +45,9 @@ variables {
   postgresql_subnet_prefix        = "10.61.0.32/28"
   private_endpoints_subnet_prefix = "10.61.0.48/28"
 
-  allowed_group_ids   = ["00000000-0000-0000-0000-0000000000bb"]
-  postgresql_sku_name = "B_Standard_B1ms"
+  allowed_group_ids     = ["00000000-0000-0000-0000-0000000000bb"]
+  postgresql_sku_name   = "B_Standard_B1ms"
+  postgresql_ha_enabled = false
 }
 
 run "first_apply_creates_platform_only" {
