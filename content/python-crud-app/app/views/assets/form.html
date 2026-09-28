@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>{{ 'Edit asset' if asset else 'New asset' }}</h1>
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+<form method="post" enctype="multipart/form-data">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <label for="name">Name</label>
+  <input id="name" type="text" name="name" value="{{ asset.name if asset else '' }}" required>
+
+  <label for="category">Category</label>
+  <input id="category" type="text" name="category" value="{{ asset.category if asset else '' }}">
+
+  <label for="description">Description</label>
+  <textarea id="description" name="description">{{ asset.description if asset else '' }}</textarea>
+
+  <label for="image">Image (JPEG, PNG or WebP)</label>
+  <input id="image" type="file" name="image" accept="image/jpeg,image/png,image/webp">
+
+  <button type="submit">Save</button>
+</form>
+{% endblock %}

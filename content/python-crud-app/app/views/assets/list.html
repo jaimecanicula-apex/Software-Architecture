@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Assets</h1>
+<form method="get">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search name or category">
+  <button type="submit">Search</button>
+</form>
+<p><a href="{{ url_for('assets.new_asset') }}">New asset</a></p>
+<ul class="assets">
+  {% for asset in assets %}
+  <li>
+    {% if asset.image_blob_name %}
+      <img src="{{ url_for('assets.asset_image', asset_id=asset.id) }}" alt="{{ asset.name }}" width="120">
+    {% endif %}
+    <h2>{{ asset.name }}</h2>
+    <p class="lede">{{ asset.category }}</p>
+    <p>{{ asset.description }}</p>
+    {% if is_admin or asset.owner_user_id == user_id %}
+      <a href="{{ url_for('assets.edit_asset', asset_id=asset.id) }}">Edit</a>
+      <form method="post" action="{{ url_for('assets.delete_asset', asset_id=asset.id) }}" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token', '') }}">
+        <button type="submit">Delete</button>
+      </form>
+    {% endif %}
+  </li>
+  {% else %}
+  <li>No assets yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

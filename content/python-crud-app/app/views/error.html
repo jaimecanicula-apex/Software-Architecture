@@ -1,0 +1,6 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>Something went wrong</h1>
+<p class="error" role="alert">{{ message }}</p>
+<p><a href="{{ url_for('assets.list_assets') }}">Back to assets</a></p>
+{% endblock %}
