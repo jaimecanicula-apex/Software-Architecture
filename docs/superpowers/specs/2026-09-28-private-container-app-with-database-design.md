@@ -43,9 +43,9 @@ references another template's files.
 
 ## Names and layout
 
-- Template folder: `infrastructure/privately-accessible-container-app-with-database/`
-- Workload code: `pcd` (private container + database)
-- Stack folder: `stacks/container-app-with-database/`
+- Template folder: `infrastructure/privately-accessible-container-app-with-database-and-storage/`
+- Workload code: `pcds` (private container, database, storage)
+- Stack folder: `stacks/container-app-with-database-and-storage/`
 - Content folder: `content/python-crud-app/` (per the `<language>-<pattern>-app`
   naming rule — it's built into a container image, not uploaded as static
   site content)
