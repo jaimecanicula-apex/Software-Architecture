@@ -226,3 +226,241 @@ module "key_vault" {
 
   tags = local.tags
 }
+
+# ---------------------------------------------------------------- monitoring
+
+module "monitoring" {
+  source = "../../modules/monitoring"
+
+  resource_group_name       = azurerm_resource_group.this.name
+  resource_group_id         = azurerm_resource_group.this.id
+  location                  = var.location
+  log_analytics_name        = module.naming.log_analytics
+  application_insights_name = module.naming.application_insights
+  action_group_name         = module.naming.action_group
+  action_group_short_name   = module.naming.action_group_short
+  log_retention_days        = var.log_retention_days
+  log_daily_quota_gb        = var.log_daily_quota_gb
+  alert_email_receivers     = var.alert_email_receivers
+  viewer_principal_ids      = var.monitoring_viewer_principal_ids
+
+  postgresql_server_id                     = module.postgresql.server_id
+  key_vault_id                             = module.key_vault.id
+  storage_account_id                       = module.storage.id
+  postgresql_cpu_alert_threshold           = var.postgresql_cpu_alert_threshold
+  storage_used_capacity_alert_threshold_gb = var.storage_used_capacity_alert_threshold_gb
+
+  tags = local.tags
+}
+
+# ---------------------------------------------------------------- hosting
+
+module "container_app" {
+  source = "../../modules/container-app"
+
+  resource_group_name          = azurerm_resource_group.this.name
+  location                      = var.location
+  environment_name               = module.naming.container_apps_environment
+  container_app_name             = module.naming.container_app
+  registry_name                   = module.naming.container_registry
+  managed_identity_name           = module.naming.managed_identity
+  subnet_id                       = module.network.container_apps_subnet_id
+  dns_zone_virtual_network_ids    = local.dns_link_targets
+  log_analytics_workspace_id      = module.monitoring.log_analytics_workspace_id
+  zone_redundancy_enabled         = var.zone_redundancy_enabled
+  registry_sku                    = var.registry_sku
+
+  registry_zone_redundancy_enabled = var.registry_zone_redundancy_enabled
+
+  create_container_app = var.create_container_app
+  image_repository     = var.image_repository
+  initial_image_tag    = var.initial_image_tag
+  cpu                    = var.container_cpu
+  memory                  = var.container_memory
+  min_replicas            = var.min_replicas
+  max_replicas            = var.max_replicas
+
+  environment_variables = merge(var.app_settings, {
+    DB_HOST                    = module.postgresql.fqdn
+    DB_NAME                    = module.postgresql.database_name
+    DB_USER                    = var.postgresql_administrator_login
+    AZURE_STORAGE_ACCOUNT_NAME = module.storage.account_name
+    AZURE_STORAGE_CONTAINER    = "images"
+    SEED_ADMIN_USERNAME        = var.seed_admin_username
+    SEED_DEMO_USERNAME         = var.seed_demo_username
+  })
+
+  secrets = var.create_container_app ? {
+    (local.auth_secret_name)        = { key_vault_secret_id = module.key_vault.secret_ids[local.auth_secret_name] }
+    "appinsights-connection"        = { key_vault_secret_id = module.key_vault.secret_ids["appinsights-connection"] }
+    (local.db_password_secret_name) = { key_vault_secret_id = module.key_vault.secret_ids[local.db_password_secret_name] }
+    (local.flask_secret_name)       = { key_vault_secret_id = module.key_vault.secret_ids[local.flask_secret_name] }
+    (local.seed_admin_secret_name)  = { key_vault_secret_id = module.key_vault.secret_ids[local.seed_admin_secret_name] }
+    (local.seed_demo_secret_name)   = { key_vault_secret_id = module.key_vault.secret_ids[local.seed_demo_secret_name] }
+  } : {}
+
+  secret_environment_variables = {
+    APPLICATIONINSIGHTS_CONNECTION_STRING = "appinsights-connection"
+    DB_PASSWORD                            = local.db_password_secret_name
+    APP_SECRET_KEY                         = local.flask_secret_name
+    SEED_ADMIN_PASSWORD                    = local.seed_admin_secret_name
+    SEED_DEMO_PASSWORD                     = local.seed_demo_secret_name
+  }
+
+  tags = local.tags
+}
+
+check "zone_redundancy_has_replicas_to_spread" {
+  assert {
+    condition     = !var.zone_redundancy_enabled || var.min_replicas >= 2
+    error_message = "zone_redundancy_enabled is on but min_replicas is below 2: the one replica sits in one zone and must be rescheduled if that zone fails."
+  }
+}
+
+# ---------------------------------------------------------------- sign-in
+
+module "entra_app" {
+  source = "../../modules/entra-app-auth"
+  count  = var.create_container_app ? 1 : 0
+
+  display_name        = module.naming.entra_app
+  site_host_name      = module.container_app.container_app_fqdn
+  allowed_group_ids   = var.allowed_group_ids
+  assignment_required = true
+  owners              = var.entra_app_owners
+}
+
+resource "azapi_resource" "sign_in" {
+  count = var.create_container_app ? 1 : 0
+
+  type      = "Microsoft.App/containerApps/authConfigs@2024-03-01"
+  name      = "current"
+  parent_id = module.container_app.container_app_id
+
+  body = {
+    properties = {
+      platform = { enabled = true }
+      globalValidation = {
+        unauthenticatedClientAction = "RedirectToLoginPage"
+        redirectToProvider          = "azureactivedirectory"
+        excludedPaths               = ["/healthz"]
+      }
+      identityProviders = {
+        azureActiveDirectory = {
+          enabled = true
+          registration = {
+            clientId                = module.entra_app[0].client_id
+            clientSecretSettingName = local.auth_secret_name
+            openIdIssuer            = "https://login.microsoftonline.com/${var.tenant_id}/v2.0"
+          }
+        }
+      }
+    }
+  }
+}
+
+# ---------------------------------------------------------------- alerts
+
+resource "azurerm_monitor_metric_alert" "restarts" {
+  count = var.create_container_app ? 1 : 0
+
+  name                = "alert-restarts-${module.naming.suffix}"
+  resource_group_name = azurerm_resource_group.this.name
+  scopes              = [module.container_app.container_app_id]
+  description         = "The container restarted: it crashed or failed its health probe."
+  severity            = 2
+  frequency           = "PT5M"
+  window_size         = "PT15M"
+  tags                = local.tags
+
+  criteria {
+    metric_namespace = "Microsoft.App/containerApps"
+    metric_name      = "RestartCount"
+    aggregation      = "Total"
+    operator         = "GreaterThan"
+    threshold        = 0
+  }
+
+  action {
+    action_group_id = module.monitoring.action_group_id
+  }
+}
+
+resource "azurerm_monitor_metric_alert" "server_errors" {
+  count = var.create_container_app ? 1 : 0
+
+  name                = "alert-5xx-${module.naming.suffix}"
+  resource_group_name = azurerm_resource_group.this.name
+  scopes              = [module.container_app.container_app_id]
+  description         = "The app returned more than 5 server errors in 15 minutes."
+  severity            = 2
+  frequency           = "PT5M"
+  window_size         = "PT15M"
+  tags                = local.tags
+
+  criteria {
+    metric_namespace = "Microsoft.App/containerApps"
+    metric_name      = "Requests"
+    aggregation      = "Total"
+    operator         = "GreaterThan"
+    threshold        = 5
+
+    dimension {
+      name     = "statusCodeCategory"
+      operator = "Include"
+      values   = ["5xx"]
+    }
+  }
+
+  action {
+    action_group_id = module.monitoring.action_group_id
+  }
+}
+
+# ---------------------------------------------------------------- governance
+
+resource "azurerm_management_lock" "resource_group" {
+  count = var.enable_delete_lock ? 1 : 0
+
+  name       = "lock-cannot-delete"
+  scope      = azurerm_resource_group.this.id
+  lock_level = "CanNotDelete"
+  notes      = "Protects the ${var.environment} private container app with database and storage. Remove through change control only."
+
+  depends_on = [module.container_app, module.monitoring, module.postgresql, module.storage, module.key_vault, azapi_resource.sign_in]
+}
+
+resource "azurerm_consumption_budget_resource_group" "this" {
+  count = var.monthly_budget > 0 ? 1 : 0
+
+  name              = module.naming.budget
+  resource_group_id = azurerm_resource_group.this.id
+  amount            = var.monthly_budget
+  time_grain        = "Monthly"
+
+  time_period {
+    start_date = var.budget_start_date
+  }
+
+  notification {
+    enabled        = true
+    threshold      = 80
+    threshold_type = "Actual"
+    operator       = "GreaterThanOrEqualTo"
+    contact_emails = var.budget_contact_emails
+    contact_groups = [module.monitoring.action_group_id]
+  }
+
+  notification {
+    enabled        = true
+    threshold      = 100
+    threshold_type = "Forecasted"
+    operator       = "GreaterThanOrEqualTo"
+    contact_emails = var.budget_contact_emails
+    contact_groups = [module.monitoring.action_group_id]
+  }
+
+  lifecycle {
+    ignore_changes = [time_period]
+  }
+}
