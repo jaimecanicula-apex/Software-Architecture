@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Asset catalogue{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="{{ url_for('assets.list_assets') if session.get('user_id') else url_for('auth.login') }}">Asset catalogue</a>
+    <nav>
+      {% if session.get('user_id') %}
+        <a href="{{ url_for('assets.list_assets') }}">Assets</a>
+        {% if session.get('role') == 'admin' %}
+          <a href="{{ url_for('admin.list_users') }}">Users</a>
+        {% endif %}
+        <form method="post" action="{{ url_for('auth.logout') }}" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token', '') }}">
+          <button type="submit">Log out</button>
+        </form>
+      {% endif %}
+    </nav>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
