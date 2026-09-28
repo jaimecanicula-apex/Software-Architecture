@@ -24,6 +24,7 @@ Current templates:
 | Public static website, sign-in required | `infrastructure/public-signin-static-website/` | `content/public-signin-static-website/` |
 | Private (internal) static website | `infrastructure/privately-accessible-static-website/` | `content/privately-accessible-static-website/` |
 | Private (internal) container app | `infrastructure/privately-accessible-container-app/` | `content/python-mvc-app/` |
+| Private (internal) container app with database and storage | `infrastructure/privately-accessible-container-app-with-database-and-storage/` | `content/python-crud-app/` |
 
 ## Naming conventions
 

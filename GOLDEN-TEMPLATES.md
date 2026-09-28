@@ -10,6 +10,7 @@ All current templates are proofs of concept.
 | Public sign-in static website | `infrastructure/public-signin-static-website/` | `content/public-signin-static-website/` | The audience is **approved external people** who must sign in with Entra ID (B2B guests of the APEX tenant) before seeing any page |
 | Privately accessible static website | `infrastructure/privately-accessible-static-website/` | `content/privately-accessible-static-website/` | The audience is **internal**: anyone signing in with APEX Entra ID (colleagues, APEX companies, contractors). No internet exposure. |
 | Privately accessible container app | `infrastructure/privately-accessible-container-app/` | `content/python-mvc-app/` | A containerised backend application (for example Python) for **internal users** in assigned Entra groups, reached on an internal URL from the corporate network |
+| Privately accessible container app with database and storage | `infrastructure/privately-accessible-container-app-with-database-and-storage/` | `content/python-crud-app/` | A containerised backend with its own PostgreSQL database, Blob image storage and app-level username/password login, for **internal users** in assigned Entra groups |
 
 ### Planned
 
