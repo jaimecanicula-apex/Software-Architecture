@@ -106,13 +106,12 @@ variable "tags" {
   default = {}
 }
 
-# A Burstable server has no standby to fail over to.
-check "ha_needs_non_burstable_sku" {
-  assert {
-    condition     = !var.ha_enabled || !startswith(var.sku_name, "B_")
-    error_message = "ha_enabled needs a General Purpose or Memory Optimized sku_name; Burstable (B_*) has no standby."
-  }
-}
+# A Burstable server has no standby to fail over to. Enforced by the caller
+# (the stack's own "postgresql_ha_needs_non_burstable_sku" check), not here:
+# a terraform test's expect_failures can only target a checkable object in
+# the configuration under test, never one inside a child module, so keeping
+# the same rule in both places would make one of them untestable and the
+# two could drift out of sync.
 
 resource "azurerm_postgresql_flexible_server" "this" {
   name                = var.name

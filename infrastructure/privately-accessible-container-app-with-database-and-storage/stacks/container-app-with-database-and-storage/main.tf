@@ -317,6 +317,17 @@ check "zone_redundancy_has_replicas_to_spread" {
   }
 }
 
+# Mirrors modules/postgresql's own "ha_needs_non_burstable_sku" check: a
+# terraform test's expect_failures can only target a checkable object in the
+# configuration under test, not one inside a child module, so the same guard
+# is restated here to be assertable from the stack's own test suite.
+check "postgresql_ha_needs_non_burstable_sku" {
+  assert {
+    condition     = !var.postgresql_ha_enabled || !startswith(var.postgresql_sku_name, "B_")
+    error_message = "postgresql_ha_enabled needs a General Purpose or Memory Optimized postgresql_sku_name; Burstable (B_*) has no standby."
+  }
+}
+
 # ---------------------------------------------------------------- sign-in
 
 module "entra_app" {

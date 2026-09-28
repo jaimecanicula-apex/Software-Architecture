@@ -66,18 +66,18 @@ variable "tags" {
 }
 
 variable "postgresql_server_id" {
-  type    = string
-  default = null
+  description = "Required: the PostgreSQL server to send diagnostics and CPU alerts for. This stack always has one, so it is not optional (count on a not-yet-known resource ID cannot work — Terraform must know at plan time whether the resource exists)."
+  type        = string
 }
 
 variable "key_vault_id" {
-  type    = string
-  default = null
+  description = "Required: the Key Vault to send diagnostics for."
+  type        = string
 }
 
 variable "storage_account_id" {
-  type    = string
-  default = null
+  description = "Required: the storage account to send diagnostics and a capacity alert for."
+  type        = string
 }
 
 variable "postgresql_cpu_alert_threshold" {
@@ -140,8 +140,6 @@ resource "azurerm_role_assignment" "viewers" {
 }
 
 resource "azurerm_monitor_diagnostic_setting" "postgresql" {
-  count = var.postgresql_server_id == null ? 0 : 1
-
   name                       = "diag-postgresql"
   target_resource_id         = var.postgresql_server_id
   log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
@@ -156,8 +154,6 @@ resource "azurerm_monitor_diagnostic_setting" "postgresql" {
 }
 
 resource "azurerm_monitor_diagnostic_setting" "key_vault" {
-  count = var.key_vault_id == null ? 0 : 1
-
   name                       = "diag-key-vault"
   target_resource_id         = var.key_vault_id
   log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
@@ -172,8 +168,6 @@ resource "azurerm_monitor_diagnostic_setting" "key_vault" {
 }
 
 resource "azurerm_monitor_diagnostic_setting" "storage" {
-  count = var.storage_account_id == null ? 0 : 1
-
   name                       = "diag-storage"
   target_resource_id         = var.storage_account_id
   log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
@@ -184,8 +178,6 @@ resource "azurerm_monitor_diagnostic_setting" "storage" {
 }
 
 resource "azurerm_monitor_metric_alert" "postgresql_cpu" {
-  count = var.postgresql_server_id == null ? 0 : 1
-
   name                = "alert-postgresql-cpu"
   resource_group_name = var.resource_group_name
   scopes              = [var.postgresql_server_id]
@@ -209,8 +201,6 @@ resource "azurerm_monitor_metric_alert" "postgresql_cpu" {
 }
 
 resource "azurerm_monitor_metric_alert" "storage_capacity" {
-  count = var.storage_account_id == null ? 0 : 1
-
   name                = "alert-storage-capacity"
   resource_group_name = var.resource_group_name
   scopes              = [var.storage_account_id]
