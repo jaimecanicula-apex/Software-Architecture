@@ -61,8 +61,8 @@ key_vault_purge_protection_enabled = true
 create_container_app = false
 image_repository     = "python-crud-app"
 initial_image_tag    = "initial"
-min_replicas          = 2 # one per zone at least, so a zone failure leaves a replica serving
-max_replicas           = 2
+min_replicas         = 2 # one per zone at least, so a zone failure leaves a replica serving
+max_replicas         = 2
 app_settings = {
   APP_MAX_UPLOAD_MB = "10"
 }

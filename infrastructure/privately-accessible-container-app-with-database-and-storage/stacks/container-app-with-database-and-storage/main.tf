@@ -21,14 +21,14 @@ locals {
   tags = merge(
     {
       environment           = var.environment
-      application            = var.application_name
-      workload                = var.workload
-      audience                = "internal"
-      owner                    = var.governance_tags.owner
-      "cost-centre"            = var.governance_tags.cost_centre
-      "data-classification"    = var.governance_tags.data_classification
-      support                  = var.governance_tags.support
-      "managed-by"             = "terraform"
+      application           = var.application_name
+      workload              = var.workload
+      audience              = "internal"
+      owner                 = var.governance_tags.owner
+      "cost-centre"         = var.governance_tags.cost_centre
+      "data-classification" = var.governance_tags.data_classification
+      support               = var.governance_tags.support
+      "managed-by"          = "terraform"
     },
     var.extra_tags,
   )
@@ -53,23 +53,23 @@ data "azurerm_client_config" "current" {}
 module "network" {
   source = "../../modules/network"
 
-  name                             = module.naming.virtual_network
-  resource_group_name              = azurerm_resource_group.this.name
-  location                         = var.location
-  address_space                    = var.vnet_address_space
-  container_apps_subnet_name       = module.naming.subnet_container_apps
-  nsg_name                         = module.naming.nsg_container_apps
-  container_apps_subnet_prefix     = var.container_apps_subnet_prefix
-  postgresql_subnet_name           = module.naming.subnet_postgresql
-  postgresql_subnet_prefix         = var.postgresql_subnet_prefix
-  postgresql_nsg_name              = module.naming.nsg_postgresql
-  private_endpoints_subnet_name    = module.naming.subnet_private_endpoints
-  private_endpoints_subnet_prefix  = var.private_endpoints_subnet_prefix
-  private_endpoints_nsg_name       = module.naming.nsg_private_endpoints
-  dns_servers                      = var.dns_servers
-  hub_virtual_network_id           = var.hub_virtual_network_id
-  use_hub_gateway                  = var.use_hub_gateway
-  tags                             = local.tags
+  name                            = module.naming.virtual_network
+  resource_group_name             = azurerm_resource_group.this.name
+  location                        = var.location
+  address_space                   = var.vnet_address_space
+  container_apps_subnet_name      = module.naming.subnet_container_apps
+  nsg_name                        = module.naming.nsg_container_apps
+  container_apps_subnet_prefix    = var.container_apps_subnet_prefix
+  postgresql_subnet_name          = module.naming.subnet_postgresql
+  postgresql_subnet_prefix        = var.postgresql_subnet_prefix
+  postgresql_nsg_name             = module.naming.nsg_postgresql
+  private_endpoints_subnet_name   = module.naming.subnet_private_endpoints
+  private_endpoints_subnet_prefix = var.private_endpoints_subnet_prefix
+  private_endpoints_nsg_name      = module.naming.nsg_private_endpoints
+  dns_servers                     = var.dns_servers
+  hub_virtual_network_id          = var.hub_virtual_network_id
+  use_hub_gateway                 = var.use_hub_gateway
+  tags                            = local.tags
 }
 
 locals {
@@ -153,21 +153,21 @@ resource "random_password" "seed_demo" {
 module "postgresql" {
   source = "../../modules/postgresql"
 
-  name                 = module.naming.postgresql_server
-  resource_group_name  = azurerm_resource_group.this.name
-  location             = var.location
-  delegated_subnet_id  = module.network.postgresql_subnet_id
-  private_dns_zone_id  = azurerm_private_dns_zone.postgresql.id
+  name                = module.naming.postgresql_server
+  resource_group_name = azurerm_resource_group.this.name
+  location            = var.location
+  delegated_subnet_id = module.network.postgresql_subnet_id
+  private_dns_zone_id = azurerm_private_dns_zone.postgresql.id
 
-  postgresql_version            = var.postgresql_version
-  sku_name                      = var.postgresql_sku_name
-  storage_mb                    = var.postgresql_storage_mb
-  backup_retention_days         = var.postgresql_backup_retention_days
-  geo_redundant_backup_enabled  = var.postgresql_geo_redundant_backup_enabled
-  ha_enabled                    = var.postgresql_ha_enabled
-  ha_mode                       = var.postgresql_ha_mode
-  zone                          = var.postgresql_zone
-  standby_zone                  = var.postgresql_standby_zone
+  postgresql_version           = var.postgresql_version
+  sku_name                     = var.postgresql_sku_name
+  storage_mb                   = var.postgresql_storage_mb
+  backup_retention_days        = var.postgresql_backup_retention_days
+  geo_redundant_backup_enabled = var.postgresql_geo_redundant_backup_enabled
+  ha_enabled                   = var.postgresql_ha_enabled
+  ha_mode                      = var.postgresql_ha_mode
+  zone                         = var.postgresql_zone
+  standby_zone                 = var.postgresql_standby_zone
 
   administrator_login    = var.postgresql_administrator_login
   administrator_password = random_password.db_admin.result
@@ -182,14 +182,14 @@ module "postgresql" {
 module "storage" {
   source = "../../modules/storage"
 
-  name                        = module.naming.storage_account
-  resource_group_name         = azurerm_resource_group.this.name
-  location                    = var.location
-  private_endpoint_subnet_id  = module.network.private_endpoints_subnet_id
-  private_dns_zone_id         = azurerm_private_dns_zone.storage.id
-  replication_type            = var.storage_replication_type
-  soft_delete_retention_days  = var.storage_soft_delete_retention_days
-  reader_writer_principal_id  = module.container_app.managed_identity_principal_id
+  name                       = module.naming.storage_account
+  resource_group_name        = azurerm_resource_group.this.name
+  location                   = var.location
+  private_endpoint_subnet_id = module.network.private_endpoints_subnet_id
+  private_dns_zone_id        = azurerm_private_dns_zone.storage.id
+  replication_type           = var.storage_replication_type
+  soft_delete_retention_days = var.storage_soft_delete_retention_days
+  reader_writer_principal_id = module.container_app.managed_identity_principal_id
 
   tags = local.tags
 }
@@ -199,14 +199,14 @@ module "storage" {
 module "key_vault" {
   source = "../../modules/key-vault"
 
-  name                        = module.naming.key_vault
-  resource_group_name         = azurerm_resource_group.this.name
-  location                    = var.location
-  tenant_id                   = var.tenant_id
-  private_endpoint_subnet_id  = module.network.private_endpoints_subnet_id
-  private_dns_zone_id         = azurerm_private_dns_zone.key_vault.id
-  purge_protection_enabled    = var.key_vault_purge_protection_enabled
-  allowed_ip_ranges           = var.key_vault_allowed_ip_ranges
+  name                       = module.naming.key_vault
+  resource_group_name        = azurerm_resource_group.this.name
+  location                   = var.location
+  tenant_id                  = var.tenant_id
+  private_endpoint_subnet_id = module.network.private_endpoints_subnet_id
+  private_dns_zone_id        = azurerm_private_dns_zone.key_vault.id
+  purge_protection_enabled   = var.key_vault_purge_protection_enabled
+  allowed_ip_ranges          = var.key_vault_allowed_ip_ranges
 
   writer_principal_id = data.azurerm_client_config.current.object_id
   reader_principal_id = module.container_app.managed_identity_principal_id
@@ -259,26 +259,26 @@ module "container_app" {
   source = "../../modules/container-app"
 
   resource_group_name          = azurerm_resource_group.this.name
-  location                      = var.location
-  environment_name               = module.naming.container_apps_environment
-  container_app_name             = module.naming.container_app
-  registry_name                   = module.naming.container_registry
-  managed_identity_name           = module.naming.managed_identity
-  subnet_id                       = module.network.container_apps_subnet_id
-  dns_zone_virtual_network_ids    = local.dns_link_targets
-  log_analytics_workspace_id      = module.monitoring.log_analytics_workspace_id
-  zone_redundancy_enabled         = var.zone_redundancy_enabled
-  registry_sku                    = var.registry_sku
+  location                     = var.location
+  environment_name             = module.naming.container_apps_environment
+  container_app_name           = module.naming.container_app
+  registry_name                = module.naming.container_registry
+  managed_identity_name        = module.naming.managed_identity
+  subnet_id                    = module.network.container_apps_subnet_id
+  dns_zone_virtual_network_ids = local.dns_link_targets
+  log_analytics_workspace_id   = module.monitoring.log_analytics_workspace_id
+  zone_redundancy_enabled      = var.zone_redundancy_enabled
+  registry_sku                 = var.registry_sku
 
   registry_zone_redundancy_enabled = var.registry_zone_redundancy_enabled
 
   create_container_app = var.create_container_app
   image_repository     = var.image_repository
   initial_image_tag    = var.initial_image_tag
-  cpu                    = var.container_cpu
-  memory                  = var.container_memory
-  min_replicas            = var.min_replicas
-  max_replicas            = var.max_replicas
+  cpu                  = var.container_cpu
+  memory               = var.container_memory
+  min_replicas         = var.min_replicas
+  max_replicas         = var.max_replicas
 
   environment_variables = merge(var.app_settings, {
     DB_HOST                    = module.postgresql.fqdn
@@ -301,10 +301,10 @@ module "container_app" {
 
   secret_environment_variables = {
     APPLICATIONINSIGHTS_CONNECTION_STRING = "appinsights-connection"
-    DB_PASSWORD                            = local.db_password_secret_name
-    APP_SECRET_KEY                         = local.flask_secret_name
-    SEED_ADMIN_PASSWORD                    = local.seed_admin_secret_name
-    SEED_DEMO_PASSWORD                     = local.seed_demo_secret_name
+    DB_PASSWORD                           = local.db_password_secret_name
+    APP_SECRET_KEY                        = local.flask_secret_name
+    SEED_ADMIN_PASSWORD                   = local.seed_admin_secret_name
+    SEED_DEMO_PASSWORD                    = local.seed_demo_secret_name
   }
 
   tags = local.tags

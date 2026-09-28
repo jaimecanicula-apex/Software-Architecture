@@ -57,8 +57,8 @@ storage_replication_type = "ZRS"
 create_container_app = false
 image_repository     = "python-crud-app"
 initial_image_tag    = "initial"
-min_replicas          = 1
-max_replicas           = 1
+min_replicas         = 1
+max_replicas         = 1
 app_settings = {
   APP_MAX_UPLOAD_MB = "10"
 }

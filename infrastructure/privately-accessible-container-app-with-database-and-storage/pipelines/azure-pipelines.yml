@@ -1,0 +1,93 @@
+# Delivery pipeline for the private container app with database and storage
+# (Azure DevOps).
+#
+# Test:    runs the app's pytest suite.
+# Build:   builds the image in Azure Container Registry with ACR Tasks (no Docker
+#          on the agent) and tags it with the build ID.
+# Deploy:  points the container app at the new image. Runs on main only, after
+#          the approval check on the "private-container-app-with-db-<env>" environment.
+#
+# Infrastructure is released separately with Terraform; this pipeline only
+# changes the image, which Terraform ignores after the first apply.
+#
+# One-time setup in Azure DevOps:
+#   1. Service connection "azure-private-container-app" using workload identity
+#      federation (OIDC), with AcrPush on the registry and Contributor on the
+#      container app (or its resource group).
+#   2. Variable group "private-container-app-with-db-dev" with REGISTRY_NAME,
+#      CONTAINER_APP_NAME and RESOURCE_GROUP_NAME from the Terraform outputs.
+#   3. Environment "private-container-app-with-db-dev" with an Approvals check.
+#   Copy the Deploy stage per environment (qa, uat, prod) with its own variable group.
+
+trigger:
+  branches:
+    include: [main]
+  paths:
+    include: [content/python-crud-app/*, infrastructure/privately-accessible-container-app-with-database-and-storage/pipelines/azure-pipelines.yml]
+
+pr:
+  paths:
+    include: [content/python-crud-app/*]
+
+variables:
+  - group: private-container-app-with-db-dev
+  - name: appDirectory
+    value: content/python-crud-app
+  - name: imageRepository
+    value: python-crud-app
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: Test
+    jobs:
+      - job: Pytest
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "3.13"
+          - bash: |
+              python -m pip install -r requirements-dev.txt
+              python -m pytest -q
+            workingDirectory: $(appDirectory)
+            displayName: Run tests
+
+  - stage: Build
+    dependsOn: Test
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: Image
+        steps:
+          - task: AzureCLI@2
+            displayName: Build and push the image with ACR Tasks
+            inputs:
+              azureSubscription: azure-private-container-app
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                az acr build \
+                  --registry "$(REGISTRY_NAME)" \
+                  --image "$(imageRepository):$(Build.BuildId)" \
+                  "$(appDirectory)"
+
+  - stage: Deploy
+    dependsOn: Build
+    jobs:
+      - deployment: DeployDev
+        environment: private-container-app-with-db-dev
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureCLI@2
+                  displayName: Deploy the new image
+                  inputs:
+                    azureSubscription: azure-private-container-app
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az containerapp update \
+                        --name "$(CONTAINER_APP_NAME)" \
+                        --resource-group "$(RESOURCE_GROUP_NAME)" \
+                        --image "$(REGISTRY_NAME).azurecr.io/$(imageRepository):$(Build.BuildId)"
