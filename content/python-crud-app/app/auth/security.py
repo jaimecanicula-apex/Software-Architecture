@@ -42,6 +42,19 @@ def login_required(view):
     def wrapped(*args, **kwargs):
         if "user_id" not in session:
             return redirect(url_for("auth.login"))
+
+        # Re-check against the database on every request, not just at login:
+        # a deleted user must be signed out immediately, and a role change
+        # (promote or demote) must take effect on the very next request,
+        # not only the next time they sign in.
+        from app.db import get_session as get_db_session
+        from app.models.user import User
+
+        user = get_db_session().get(User, session["user_id"])
+        if user is None:
+            session.clear()
+            return redirect(url_for("auth.login"))
+        session["role"] = user.role
         return view(*args, **kwargs)
 
     return wrapped

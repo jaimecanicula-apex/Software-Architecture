@@ -112,7 +112,12 @@ The registry is empty on the first apply, so the app is created in a second pass
    ```
    The registry name is the host part of the `registry_login_server` output.
 6. **App:** set `create_container_app = true`, then run plan and apply again. The `app_url` output is the internal URL. The app seeds an admin and a demo user from the Key Vault-sourced `SEED_ADMIN_PASSWORD`/`SEED_DEMO_PASSWORD` on first startup.
-7. **DNS in the hub:** give the platform team the `environment_dns` output. They must make the corporate DNS resolve that zone: link it to the hub, or forward it to the hub's DNS resolver.
+7. **First sign-in:** read the generated admin password back out of the vault (the `key_vault_id` output names it; the identity reading it needs `Key Vault Secrets User` or higher, the same role the app's managed identity has):
+   ```
+   az keyvault secret show --vault-name <key vault name> --name seed-admin-password --query value -o tsv
+   ```
+   Sign in at `app_url` as `admin` with that password (the `SEED_ADMIN_USERNAME` tfvar, default `admin`), then change it or create named accounts from **Users** in the app and delete the seed accounts.
+8. **DNS in the hub:** give the platform team the `environment_dns` output. They must make the corporate DNS resolve that zone: link it to the hub, or forward it to the hub's DNS resolver.
 
 ## Delivering new versions
 

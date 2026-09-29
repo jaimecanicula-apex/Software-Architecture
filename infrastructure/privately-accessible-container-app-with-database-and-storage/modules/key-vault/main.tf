@@ -135,6 +135,10 @@ output "id" {
   value = azurerm_key_vault.this.id
 }
 
+output "network_acls_default_action" {
+  value = azurerm_key_vault.this.network_acls[0].default_action
+}
+
 output "secret_ids" {
   value = { for name, secret in azurerm_key_vault_secret.this : name => secret.versionless_id }
 }

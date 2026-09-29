@@ -4,6 +4,7 @@ from flask import Blueprint, abort, redirect, render_template, request, session,
 
 from app.auth.security import admin_required, csrf_token, login_required, require_csrf
 from app.db import get_session
+from app.models.asset import Asset
 from app.models.user import ROLE_ADMIN, ROLE_USER, User
 
 admin_blueprint = Blueprint("admin", __name__, url_prefix="/admin")
@@ -67,6 +68,13 @@ def delete_user(user_id: int):
     user = db.get(User, user_id)
     if user is None:
         abort(404)
+
+    owned_assets = db.query(Asset).filter_by(owner_user_id=user_id).count()
+    if owned_assets:
+        users = db.query(User).order_by(User.username).all()
+        error = f"Cannot delete '{user.username}': it owns {owned_assets} asset(s). Delete or reassign them first."
+        return render_template("admin/users.html", users=users, csrf_token=csrf_token(), error=error), 409
+
     db.delete(user)
     db.commit()
     return redirect(url_for("admin.list_users"))

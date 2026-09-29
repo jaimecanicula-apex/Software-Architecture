@@ -80,53 +80,83 @@ locals {
 }
 
 # ---------------------------------------------------------------- private DNS
+#
+# privatelink.* zone names are fixed by Azure (never per-environment, unlike
+# the Container Apps environment domain above), so every environment that
+# creates its own copy and links it to the shared hub collides: a VNet
+# cannot be linked to two zones that share a name. Two ways out, both
+# supported here:
+#   - leave the *_private_dns_zone_id variables unset: each environment
+#     creates its own zone and links only its own spoke (never the hub), so
+#     environments never contend for the hub's link to that name
+#   - set them to a platform-team-managed central zone's ID: this stack
+#     creates nothing and assumes the platform team already links it
+#     wherever it needs to resolve, hub included
 
 resource "azurerm_private_dns_zone" "postgresql" {
+  count = var.postgresql_private_dns_zone_id == null ? 1 : 0
+
   name                = "privatelink.postgres.database.azure.com"
   resource_group_name = azurerm_resource_group.this.name
   tags                = local.tags
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "postgresql" {
-  for_each = local.dns_link_targets
+  count = var.postgresql_private_dns_zone_id == null ? 1 : 0
 
-  name                  = "link-${each.key}"
+  name                  = "link-spoke"
   resource_group_name   = azurerm_resource_group.this.name
-  private_dns_zone_name = azurerm_private_dns_zone.postgresql.name
-  virtual_network_id    = each.value
+  private_dns_zone_name = azurerm_private_dns_zone.postgresql[0].name
+  virtual_network_id    = module.network.virtual_network_id
   tags                  = local.tags
 }
 
+locals {
+  postgresql_dns_zone_id = coalesce(var.postgresql_private_dns_zone_id, try(azurerm_private_dns_zone.postgresql[0].id, null))
+}
+
 resource "azurerm_private_dns_zone" "key_vault" {
+  count = var.key_vault_private_dns_zone_id == null ? 1 : 0
+
   name                = "privatelink.vaultcore.azure.net"
   resource_group_name = azurerm_resource_group.this.name
   tags                = local.tags
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "key_vault" {
-  for_each = local.dns_link_targets
+  count = var.key_vault_private_dns_zone_id == null ? 1 : 0
 
-  name                  = "link-${each.key}"
+  name                  = "link-spoke"
   resource_group_name   = azurerm_resource_group.this.name
-  private_dns_zone_name = azurerm_private_dns_zone.key_vault.name
-  virtual_network_id    = each.value
+  private_dns_zone_name = azurerm_private_dns_zone.key_vault[0].name
+  virtual_network_id    = module.network.virtual_network_id
   tags                  = local.tags
 }
 
+locals {
+  key_vault_dns_zone_id = coalesce(var.key_vault_private_dns_zone_id, try(azurerm_private_dns_zone.key_vault[0].id, null))
+}
+
 resource "azurerm_private_dns_zone" "storage" {
+  count = var.storage_private_dns_zone_id == null ? 1 : 0
+
   name                = "privatelink.blob.core.windows.net"
   resource_group_name = azurerm_resource_group.this.name
   tags                = local.tags
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "storage" {
-  for_each = local.dns_link_targets
+  count = var.storage_private_dns_zone_id == null ? 1 : 0
 
-  name                  = "link-${each.key}"
+  name                  = "link-spoke"
   resource_group_name   = azurerm_resource_group.this.name
-  private_dns_zone_name = azurerm_private_dns_zone.storage.name
-  virtual_network_id    = each.value
+  private_dns_zone_name = azurerm_private_dns_zone.storage[0].name
+  virtual_network_id    = module.network.virtual_network_id
   tags                  = local.tags
+}
+
+locals {
+  storage_dns_zone_id = coalesce(var.storage_private_dns_zone_id, try(azurerm_private_dns_zone.storage[0].id, null))
 }
 
 # ---------------------------------------------------------------- generated secrets
@@ -157,7 +187,7 @@ module "postgresql" {
   resource_group_name = azurerm_resource_group.this.name
   location            = var.location
   delegated_subnet_id = module.network.postgresql_subnet_id
-  private_dns_zone_id = azurerm_private_dns_zone.postgresql.id
+  private_dns_zone_id = local.postgresql_dns_zone_id
 
   postgresql_version           = var.postgresql_version
   sku_name                     = var.postgresql_sku_name
@@ -186,7 +216,7 @@ module "storage" {
   resource_group_name        = azurerm_resource_group.this.name
   location                   = var.location
   private_endpoint_subnet_id = module.network.private_endpoints_subnet_id
-  private_dns_zone_id        = azurerm_private_dns_zone.storage.id
+  private_dns_zone_id        = local.storage_dns_zone_id
   replication_type           = var.storage_replication_type
   soft_delete_retention_days = var.storage_soft_delete_retention_days
   reader_writer_principal_id = module.container_app.managed_identity_principal_id
@@ -204,7 +234,7 @@ module "key_vault" {
   location                   = var.location
   tenant_id                  = var.tenant_id
   private_endpoint_subnet_id = module.network.private_endpoints_subnet_id
-  private_dns_zone_id        = azurerm_private_dns_zone.key_vault.id
+  private_dns_zone_id        = local.key_vault_dns_zone_id
   purge_protection_enabled   = var.key_vault_purge_protection_enabled
   allowed_ip_ranges          = var.key_vault_allowed_ip_ranges
 

@@ -141,6 +141,13 @@ resource "azurerm_postgresql_flexible_server" "this" {
   }
 
   tags = var.tags
+
+  lifecycle {
+    # A zone-redundant failover swaps the primary and standby zones; Azure
+    # updates the resource in place, and the next plan must not try to
+    # swap them back.
+    ignore_changes = [zone, high_availability[0].standby_availability_zone]
+  }
 }
 
 resource "azurerm_postgresql_flexible_server_database" "app" {

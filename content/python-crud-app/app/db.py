@@ -56,3 +56,13 @@ def get_engine():
 
 def get_session():
     return SessionLocal()
+
+
+def remove_session() -> None:
+    """Call at request teardown. A plain `from app.db import SessionLocal`
+    elsewhere would bind the pre-init_engine() object at import time and
+    remove the wrong (stale) scoped session after a test's init_engine()
+    rebuild; this function resolves SessionLocal from the module's current
+    globals at call time instead, the same late-binding get_session() relies
+    on."""
+    SessionLocal.remove()

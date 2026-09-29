@@ -9,7 +9,7 @@ from app.controllers.admin_controller import admin_blueprint
 from app.controllers.asset_controller import assets_blueprint
 from app.controllers.auth_controller import auth_blueprint
 from app.controllers.health_controller import health_blueprint
-from app.db import Base, SessionLocal, get_engine
+from app.db import remove_session
 from app.seed import seed_users
 
 MEGABYTE = 1024 * 1024
@@ -29,7 +29,9 @@ def create_app(test_config: dict | None = None) -> Flask:
 
     configure_logging()
 
-    Base.metadata.create_all(bind=get_engine())
+    # seed_users() creates the schema too (inside its advisory lock — see
+    # app/seed.py's docstring for why that beats a separate create_all()
+    # here, ahead of the lock, when two workers boot at once).
     seed_users()
 
     app.register_blueprint(auth_blueprint)
@@ -42,7 +44,7 @@ def create_app(test_config: dict | None = None) -> Flask:
         # Container Apps built-in auth already refuses unauthenticated
         # requests before they reach the app; this header check is
         # defense-in-depth so the app never trusts network position alone.
-        if app.config.get("TESTING"):
+        if app.config.get("TESTING") or os.environ.get("APP_ENV") == "development":
             return
         if request.path == "/healthz" or request.path.startswith("/static/"):
             return
@@ -50,8 +52,8 @@ def create_app(test_config: dict | None = None) -> Flask:
             abort(401)
 
     @app.teardown_appcontext
-    def remove_session(_exc=None):
-        SessionLocal.remove()
+    def _remove_session(_exc=None):
+        remove_session()
 
     @app.errorhandler(413)
     def upload_too_large(_error):

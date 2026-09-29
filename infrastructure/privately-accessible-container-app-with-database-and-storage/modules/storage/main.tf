@@ -124,3 +124,11 @@ output "account_name" {
 output "primary_blob_endpoint" {
   value = azurerm_storage_account.this.primary_blob_endpoint
 }
+
+output "public_network_access_enabled" {
+  value = azurerm_storage_account.this.public_network_access_enabled
+}
+
+output "shared_access_key_enabled" {
+  value = azurerm_storage_account.this.shared_access_key_enabled
+}

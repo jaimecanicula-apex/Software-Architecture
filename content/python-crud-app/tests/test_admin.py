@@ -40,3 +40,28 @@ def test_admin_cannot_delete_themselves(client):
     admin = db.query(User).filter_by(username="admin").one()
     resp = client.post(f"/admin/users/{admin.id}/delete", data={"csrf_token": token})
     assert resp.status_code == 400
+
+
+def test_admin_cannot_delete_a_user_who_owns_assets(client):
+    """Deleting a user who owns assets would either orphan those rows or
+    (on a database that enforces the foreign key, unlike SQLite by default)
+    fail with an unhandled IntegrityError. Block it instead, with a message
+    telling the admin why."""
+    login(client, "demo", "demo-pass-123")
+    token = _csrf_from(client.get("/assets/new"))
+    client.post("/assets/new", data={"name": "Drill", "csrf_token": token}, follow_redirects=True)
+    client.post("/logout", data={"csrf_token": token})
+
+    login(client, "admin", "admin-pass-123")
+    token = _csrf_from(client.get("/admin/users"))
+    from app.db import get_session
+    from app.models.user import User
+    db = get_session()
+    demo = db.query(User).filter_by(username="demo").one()
+
+    resp = client.post(f"/admin/users/{demo.id}/delete", data={"csrf_token": token})
+    assert resp.status_code == 409
+    assert b"Cannot delete" in resp.data
+
+    still_there = db.query(User).filter_by(username="demo").one_or_none()
+    assert still_there is not None

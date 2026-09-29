@@ -98,6 +98,21 @@ run "database_and_storage_are_never_public" {
     condition     = module.postgresql.fqdn != null
     error_message = "PostgreSQL must be created regardless of create_container_app."
   }
+
+  assert {
+    condition     = module.storage.public_network_access_enabled == false
+    error_message = "Storage account must not allow public network access."
+  }
+
+  assert {
+    condition     = module.storage.shared_access_key_enabled == false
+    error_message = "Storage account must not allow access via a shared key, only the app's managed identity."
+  }
+
+  assert {
+    condition     = module.key_vault.network_acls_default_action == "Deny"
+    error_message = "Key Vault must deny public access by default; key_vault_allowed_ip_ranges is the only opt-in."
+  }
 }
 
 run "postgresql_ha_needs_non_burstable_sku" {
@@ -109,6 +124,54 @@ run "postgresql_ha_needs_non_burstable_sku" {
   }
 
   expect_failures = [check.postgresql_ha_needs_non_burstable_sku]
+}
+
+run "postgresql_ha_plans_cleanly_with_a_general_purpose_sku" {
+  command = plan
+
+  variables {
+    environment             = "uat"
+    postgresql_sku_name     = "GP_Standard_D2ds_v5"
+    postgresql_ha_enabled   = true
+    postgresql_ha_mode      = "ZoneRedundant"
+    postgresql_zone         = "1"
+    postgresql_standby_zone = "2"
+    zone_redundancy_enabled = true
+    min_replicas            = 2
+  }
+
+  assert {
+    condition     = module.postgresql.fqdn != null
+    error_message = "A General Purpose SKU with HA and zones must plan cleanly."
+  }
+}
+
+run "central_private_dns_zones_are_used_instead_of_creating_new_ones" {
+  command = plan
+
+  variables {
+    postgresql_private_dns_zone_id = "/subscriptions/00000000-0000-0000-0000-000000000009/resourceGroups/rg-hub-dns/providers/Microsoft.Network/privateDnsZones/privatelink.postgres.database.azure.com"
+    key_vault_private_dns_zone_id  = "/subscriptions/00000000-0000-0000-0000-000000000009/resourceGroups/rg-hub-dns/providers/Microsoft.Network/privateDnsZones/privatelink.vaultcore.azure.net"
+    storage_private_dns_zone_id    = "/subscriptions/00000000-0000-0000-0000-000000000009/resourceGroups/rg-hub-dns/providers/Microsoft.Network/privateDnsZones/privatelink.blob.core.windows.net"
+  }
+
+  assert {
+    condition     = length(azurerm_private_dns_zone.postgresql) == 0 && length(azurerm_private_dns_zone.key_vault) == 0 && length(azurerm_private_dns_zone.storage) == 0
+    error_message = "When a central zone ID is supplied, this stack must not create its own copy of that zone."
+  }
+}
+
+run "environment_never_links_privatelink_zones_to_the_hub" {
+  command = plan
+
+  variables {
+    hub_virtual_network_id = "/subscriptions/00000000-0000-0000-0000-000000000009/resourceGroups/rg-hub/providers/Microsoft.Network/virtualNetworks/vnet-hub"
+  }
+
+  assert {
+    condition     = length(azurerm_private_dns_zone_virtual_network_link.postgresql) == 1 && azurerm_private_dns_zone_virtual_network_link.postgresql[0].name == "link-spoke"
+    error_message = "The self-created postgresql zone must link only the spoke, never the hub, or two environments sharing a hub collide (a VNet cannot link to two zones with the same name)."
+  }
 }
 
 run "registry_zone_redundancy_needs_premium" {

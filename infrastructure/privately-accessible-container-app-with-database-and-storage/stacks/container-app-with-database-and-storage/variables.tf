@@ -239,6 +239,28 @@ variable "private_endpoints_subnet_prefix" {
   type        = string
 }
 
+# privatelink.* zone names are fixed by Azure, unlike the Container Apps
+# environment domain, so every environment linking its own copy to a shared
+# hub collides (a VNet cannot link to two zones with the same name). Leave
+# these null and each environment creates its own zone linked only to its
+# own spoke (safe by default, no hub link, no cross-environment collision).
+# Set one to a platform-team-managed central zone's ID to reuse it instead,
+# including from the hub.
+variable "postgresql_private_dns_zone_id" {
+  type    = string
+  default = null
+}
+
+variable "key_vault_private_dns_zone_id" {
+  type    = string
+  default = null
+}
+
+variable "storage_private_dns_zone_id" {
+  type    = string
+  default = null
+}
+
 # Database
 
 variable "postgresql_version" {

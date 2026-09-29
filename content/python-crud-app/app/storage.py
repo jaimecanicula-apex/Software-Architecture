@@ -5,6 +5,10 @@ import os
 import uuid
 from pathlib import Path
 
+from app.uploads import sniff_image_content_type
+
+_EXTENSIONS = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
+
 
 def _local_dir() -> Path:
     return Path(os.environ.get("APP_DATA_DIR", "/tmp")) / "images"
@@ -24,9 +28,14 @@ def _container_client():
 
 
 def save_image(file_storage) -> str:
-    """Stores the uploaded file, returns the blob name to keep on the Asset row."""
-    blob_name = f"{uuid.uuid4().hex}-{file_storage.filename}"
+    """Stores the uploaded file, returns the blob name to keep on the Asset
+    row. The name is built from a UUID and the sniffed content type, never
+    the client-supplied filename: that filename is attacker-controlled,
+    unbounded in length (image_blob_name is a bounded database column) and
+    not safe to use as a path segment in the local-folder fallback."""
     data = file_storage.read()
+    extension = _EXTENSIONS.get(sniff_image_content_type(data[:12]), "bin")
+    blob_name = f"{uuid.uuid4().hex}.{extension}"
     if _account_url():
         _container_client().upload_blob(blob_name, data, overwrite=True)
     else:
