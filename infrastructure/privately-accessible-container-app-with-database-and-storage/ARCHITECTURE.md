@@ -12,7 +12,7 @@ This document covers the **privately accessible container app with database and 
 
 It serves **internal users only**: members of the Entra groups listed in `allowed_group_ids`, reaching the app from the corporate network, then signing in a second time with the app's own username/password login. Nothing is reachable from the internet. One copy of the system runs per environment (dev, qa, uat, prod), each in its own subscription with its own state.
 
-**Inside the boundary:** the spoke network (three subnets), the Container Apps environment and app, the Private DNS zones, the registry, PostgreSQL Flexible Server, the storage account, the Key Vault, the managed identity, monitoring, the Entra app registration, and the governance resources (lock, budget, role assignments).
+**Inside the boundary:** the spoke network, split three-tier (app, data, private), the Container Apps environment and app, the Private DNS zones, the registry, PostgreSQL Flexible Server, the storage account, the Key Vault, the managed identity, monitoring, the Entra app registration, and the governance resources (lock, budget, role assignments).
 
 **Outside the boundary:**
 
@@ -30,7 +30,7 @@ The web application is a placeholder for whatever the consuming team runs. The i
 | Evidence | What it shows |
 | --- | --- |
 | `stacks/container-app-with-database-and-storage/main.tf` | Root module composing 8 modules, plus the sign-in config (azapi), four metric alerts, a delete lock and a budget |
-| `modules/network` | Spoke VNet, three subnets: `/27`+ delegated to `Microsoft.App/environments`, `/28`+ delegated to `Microsoft.DBforPostgreSQL/flexibleServers`, `/28`+ (undelegated) for private endpoints; each with its own NSG denying `Internet` inbound |
+| `modules/network` | Spoke VNet, three-tier subnets: app tier `/27`+ delegated to `Microsoft.App/environments`, data tier `/28`+ delegated to `Microsoft.DBforPostgreSQL/flexibleServers`, private tier `/28`+ (undelegated, no compute) for private endpoints; each with its own NSG denying `Internet` inbound |
 | `modules/postgresql` | PostgreSQL Flexible Server, VNet-integrated (no public network access), `check` block refusing `postgresql_ha_enabled` on a Burstable SKU (mirrored at the stack level so it's testable) |
 | `modules/key-vault` | RBAC-only Key Vault, private endpoint, `network_acls { default_action = "Deny" }`; the deploying identity gets Key Vault Secrets Officer, the container app's identity gets Key Vault Secrets User |
 | `modules/storage` | Storage account with `shared_access_key_enabled = false` and `public_network_access_enabled = false`; the container app's identity gets Storage Blob Data Contributor |
@@ -95,15 +95,15 @@ flowchart TB
 
     subgraph RG["Resource group rg-&lt;workload&gt;-&lt;env&gt;-&lt;region&gt;-001"]
         subgraph VNet["Spoke VNet"]
-            subgraph CAESub["snet-cae-&lt;suffix&gt; (NSG: no internet inbound)"]
+            subgraph CAESub["App tier · snet-cae-&lt;suffix&gt; (NSG: no internet inbound)"]
                 CAE["Container Apps environment<br/>Internal load balancer, Consumption profile"]
                 Auth["Built-in authentication<br/>Platform sidecar, Entra only, /healthz anonymous"]
                 App["Web application<br/>Any container image: HTTP on port 8000, GET /healthz"]
             end
-            subgraph PGSub["snet-pg-&lt;suffix&gt;, delegated"]
+            subgraph PGSub["Data tier · snet-pg-&lt;suffix&gt;, delegated"]
                 PG["PostgreSQL Flexible Server<br/>VNet-integrated, no public access"]
             end
-            subgraph PESub["snet-pe-&lt;suffix&gt;, private endpoints"]
+            subgraph PESub["Private tier · snet-pe-&lt;suffix&gt; — private endpoints only, nothing delegated to a workload"]
                 KVpe["Key Vault private endpoint"]
                 Stpe["Storage private endpoint"]
             end
@@ -153,8 +153,8 @@ flowchart TB
 | Container Apps environment | Azure Container Apps, workload profiles, internal LB | Private ingress on the environment's static IP, TLS termination, scaling, probes |
 | Built-in authentication | Container Apps `authConfigs` | Forces Entra sign-in before any request reaches the app; only allowed groups get a token |
 | Web application | Any container image, 1 vCPU / 2 GiB, 1 replica by default | The team's own workload; its own username/password login and CRUD (example: `content/python-crud-app/`) |
-| PostgreSQL Flexible Server | Azure Database for PostgreSQL, VNet-integrated | The app's relational data, reachable only from the delegated subnet |
-| Storage account | Azure Blob Storage, private endpoint | The app's image files, reachable only from the private-endpoint subnet, no account key |
+| PostgreSQL Flexible Server | Azure Database for PostgreSQL, VNet-integrated | The app's relational data, reachable only from the data-tier subnet |
+| Storage account | Azure Blob Storage, private endpoint | The app's image files, reachable only from the private-tier subnet, no account key |
 | Key Vault | Azure Key Vault, RBAC, private endpoint | Holds every generated secret the app and the sign-in config need |
 | Private DNS zones | Azure Private DNS | Wildcard record for the environment domain, plus resolution for PostgreSQL/Key Vault/Storage's private endpoints; all linked to spoke and hub |
 | Container Registry | ACR Basic | Stores images built by ACR Tasks |
@@ -222,7 +222,7 @@ flowchart LR
 
     subgraph Stack["stacks/container-app-with-database-and-storage (root module)"]
         Naming["naming<br/>CAF names, no resources"]
-        Network["network<br/>VNet, 3 subnets, NSGs, hub peering"]
+        Network["network<br/>VNet, 3-tier subnets (app/data/private), NSGs, hub peering"]
         Monitoring["monitoring<br/>Log Analytics, App Insights, Action Group, viewer roles, diagnostics"]
         PG["postgresql<br/>VNet-integrated Flexible Server + database"]
         St["storage<br/>Blob account + container, private endpoint"]
@@ -241,9 +241,9 @@ flowchart LR
     Naming --> PG
     Naming --> St
     Naming --> KV
-    Network -->|"delegated subnet"| PG
-    Network -->|"private-endpoint subnet"| St
-    Network -->|"private-endpoint subnet"| KV
+    Network -->|"data-tier subnet"| PG
+    Network -->|"private-tier subnet"| St
+    Network -->|"private-tier subnet"| KV
     Network -->|"subnet ID, VNet ID"| Hosting
     Hosting -->|"managed identity"| PG
     Hosting -->|"managed identity"| St
@@ -336,9 +336,9 @@ flowchart LR
     subgraph EnvSub["Environment subscription (one per dev, qa, uat, prod)"]
         subgraph RG2["rg-pcds-&lt;env&gt;-&lt;region&gt;-001"]
             subgraph Spoke["vnet-pcds-&lt;env&gt;-&lt;region&gt;-001"]
-                CAESub["snet-cae-… (/27+)<br/>cae-… internal LB → ca-… replicas"]
-                PGSub["snet-pg-… (/28+, delegated)<br/>psql-…, HA standby in uat/prod"]
-                PESub["snet-pe-… (/28+)<br/>Key Vault + Storage private endpoints"]
+                CAESub["App tier · snet-cae-… (/27+)<br/>cae-… internal LB → ca-… replicas"]
+                PGSub["Data tier · snet-pg-… (/28+, delegated)<br/>psql-…, HA standby in uat/prod"]
+                PESub["Private tier · snet-pe-… (/28+)<br/>Key Vault + Storage private endpoints only"]
             end
             PaaS["cr… · id-… · kv-… · st… · log-… · appi-… · ag-…<br/>Private DNS zones (environment, postgres, vaultcore, blob)"]
         end
