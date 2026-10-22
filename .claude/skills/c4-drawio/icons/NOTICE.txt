@@ -47,3 +47,29 @@ Added from Microsoft Azure Public Service Icons V21 (same terms):
   bastion.svg  [02422-icon-service-Bastions.svg]
   firewall.svg  [10084-icon-service-Firewalls.svg]
   key-vault.svg  [10245-icon-service-Key-Vaults.svg]
+  api-management.svg  [10042-icon-service-API-Management-Services.svg]  (from V21)
+  kubernetes-services.svg  [10023-icon-service-Kubernetes-Services.svg]  (from V21)
+  oracle-database.svg  [03490-icon-service-Oracle-Database.svg]  (from V21)
+  application-gateway.svg  [10076-icon-service-Application-Gateways.svg]  (from V21)
+  service-bus.svg  [ServiceBusNamespaces.svg]  (Azure icon bundled with the VS Code Azure Resources extension 0.13.2)
+  signalr.svg  [SignalRService.svg]  (Azure icon bundled with the VS Code Azure Resources extension 0.13.2)
+
+Added from Microsoft Azure Public Service Icons V23 (same terms):
+
+  function-apps.svg  [10029-icon-service-Function-Apps.svg]
+  ai-foundry.svg  [03513-icon-service-AI-Studio.svg]  (icon of Microsoft Foundry, formerly Azure AI Studio)
+  ai-search.svg  [10044-icon-service-Cognitive-Search.svg]  (icon of Azure AI Search)
+  power-platform.svg  [03335-icon-service-Power-Platform.svg]  (used for Power Apps, Power Automate and Dataverse)
+
+Microsoft Power Platform icons (https://learn.microsoft.com/power-platform/guidance/icons), used unmodified in
+architecture diagrams as the terms allow. Download: Power-Platform-icons-scalable.zip, December 2025:
+
+  power-apps.svg  [Power Platform/PowerApps_scalable.svg]
+  power-automate.svg  [Power Platform/PowerAutomate_scalable.svg]
+  dataverse.svg  [Power Platform/Dataverse_scalable.svg]
+
+Third-party product logos, used only to identify the product in an architecture diagram. Both files are
+Wikimedia Commons uploads marked public domain with a "trademarked" restriction; the marks belong to their owners:
+
+  sharepoint.svg  [Microsoft Office SharePoint (2025-present).svg, commons.wikimedia.org]
+  servicenow.svg  [ServiceNow logo.svg, commons.wikimedia.org]  (wordmark, 130 x 19, so give the node "icon_size": [100, 15])

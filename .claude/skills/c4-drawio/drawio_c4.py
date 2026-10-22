@@ -116,10 +116,11 @@ def build(spec: dict) -> ET.ElementTree:
         else:
             cell(node_id, card_label(node), STYLES[kind], x, y, w, h)
             if node.get("icon"):
-                size = 24 if kind == "external" else 28
+                size = node.get("icon_size") or (24 if kind == "external" else 28)  # a number, or [w, h] for a wide wordmark
+                iw, ih = size if isinstance(size, list) else (size, size)
                 top = {"system": 10, "external": 11}.get(kind, 8)
                 cell(f"{node_id}-icon", "", f"shape=image;html=1;aspect=fixed;imageAspect=0;image={icon_uri(node['icon'])};",
-                     (w - size) / 2, top, size, size, parent=node_id)
+                     (w - iw) / 2, top + (28 - ih) / 2 if ih < 24 else top, iw, ih, parent=node_id)
 
     edge_style = EDGE[spec.get("edges_style", "orthogonal")]
     for index, edge in enumerate(spec.get("edges", [])):
