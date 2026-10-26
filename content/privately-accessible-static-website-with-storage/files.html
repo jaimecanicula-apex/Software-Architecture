@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>File library · Internal Website</title>
+  <meta name="description" content="Shared file library for APEX colleagues: list, upload, download and delete files, stored privately in Azure Blob Storage.">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="preload" href="assets/fonts/texturina-400-800-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/roboto-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="assets/seal.svg" type="image/svg+xml">
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="seal" viewBox="0 0 100 100">
+      <g>
+        <rect class="seal__body" x="3" y="3" width="94" height="94" rx="4"/>
+        <rect class="seal__line" x="9" y="9" width="82" height="82" rx="2" stroke-width="2.4"/>
+        <rect class="seal__line" x="13" y="13" width="74" height="74" rx="1" stroke-width="0.9"/>
+        <text class="seal__text" x="50" y="33" font-size="11.5" letter-spacing="0.9">DESIGNED</text>
+        <path class="seal__line" d="M21 41.5h19M60 41.5h19" stroke-width="1.2"/>
+        <text class="seal__text" x="50" y="45.4" font-size="10" letter-spacing="1">BY</text>
+        <text class="seal__text" x="50" y="73" font-size="27" letter-spacing="0.5">FLOW</text>
+      </g>
+    </symbol>
+  </svg>
+
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="masthead" data-open="false">
+    <div class="wrap masthead__row">
+      <a class="brand" href="index.html" aria-label="Designed by flow, home">
+        <svg class="brand__seal" viewBox="0 0 100 100" aria-hidden="true"><use href="#seal"/></svg>
+        <span class="brand__name">Designed by flow</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        <span class="nav-toggle__bars" aria-hidden="true"></span>
+        <span class="nav-toggle__label">Menu</span>
+      </button>
+      <nav id="site-nav" class="nav" aria-label="Primary">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="files.html" aria-current="page">Files</a></li>
+          <li><a href="architecture.html">Architecture</a></li>
+          <li><a href="/.auth/logout">Sign out</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="files" aria-labelledby="files-title">
+      <div class="wrap">
+        <h1 id="files-title">File library</h1>
+        <p class="files__lede">One shared library for everyone assigned to this site. Anyone here can add, replace, download and delete files. Deleted and replaced files can be recovered by the site operators for a limited time.</p>
+
+        <p id="files-status" class="files__status" role="status" aria-live="polite">Signing in to storage…</p>
+
+        <form id="upload-form" class="files__upload" hidden>
+          <label for="file-input">Add a file</label>
+          <input id="file-input" type="file" required>
+          <button type="submit" class="files__button">Upload</button>
+          <p id="upload-rules" class="files__hint"></p>
+        </form>
+
+        <div class="files__tablewrap">
+          <table id="files-table" class="files__table" hidden>
+            <caption class="sr-only">Files in the library</caption>
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Size</th>
+                <th scope="col">Modified</th>
+                <th scope="col"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="files-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__row">
+      <a class="brand brand--small" href="index.html" aria-label="Designed by flow, home">
+        <svg class="brand__seal" viewBox="0 0 100 100" aria-hidden="true"><use href="#seal"/></svg>
+        <span class="brand__name">Designed by flow</span>
+      </a>
+      <nav class="footer__nav" aria-label="Footer">
+        <a href="index.html">Home</a>
+        <a href="files.html">Files</a>
+        <a href="architecture.html">Architecture</a>
+        <a href="/.auth/logout">Sign out</a>
+      </nav>
+    </div>
+    <p class="wrap footer__note">Internal site. Available only to assigned APEX accounts on the APEX network.</p>
+  </footer>
+
+  <script src="main.js" defer></script>
+  <script src="vendor/msal-browser.min.js" integrity="sha384-B5PXeUfgiegchZiX5iMRssMrHd9NfPhFnITob1HyW1CY76udptWpBsniaDsH/+BY" defer></script>
+  <script src="files.js" defer></script>
+</body>
+</html>

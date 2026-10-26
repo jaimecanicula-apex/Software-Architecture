@@ -37,7 +37,8 @@
         "rule": "cramped-padding",
         "value": "*",
         "files": [
-          "content/privately-accessible-static-website/index.html"
+          "content/privately-accessible-static-website/index.html",
+          "content/privately-accessible-static-website-with-storage/index.html"
         ],
         "createdAt": "2026-09-24T15:02:10.218Z",
         "reason": "agent: .section has padding-block clamp(4.5rem,10vw,8rem); detector misreads the clamp, same false positive as content/publicly-accessible-static-website/index.html"
