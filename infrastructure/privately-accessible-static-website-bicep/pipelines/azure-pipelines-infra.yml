@@ -1,0 +1,110 @@
+# Infrastructure pipeline for the PRIVATELY accessible static website (Bicep): Azure Repos + Azure Pipelines
+#
+# Deploys ONE environment per run. Choose it when you run the pipeline (parameter "environment").
+#
+# Validate: builds and lints main.bicep and the chosen environment's parameter file.
+# WhatIf:   shows what the deployment would change. Read it before approving.
+# Deploy:   waits for the approval check on the "swa-internal-infra-<env>" environment, then runs
+#           scripts/deploy.sh <env> deploy: Entra app registration, deployment stack, redirect URI.
+#
+# Why it is manual (trigger: none): every environment has its own subscription and approvers, and an
+# infrastructure change should be a decision, not a side effect of a merge. Add a trigger per
+# environment if your change process allows it.
+#
+# One-time setup in Azure DevOps (full step-by-step: ../README.md, "Deploy with Azure DevOps"):
+#   1. Service connection "sc-swa-internal-<env>" per environment: Azure Resource Manager, workload
+#      identity federation, scoped to that environment's subscription.
+#   2. Environment "swa-internal-infra-<env>" per environment, each with an Approvals check.
+#   3. Fill in environments/<env>/main.bicepparam and deployment.env.
+#   4. If the agents cannot reach the private network (see the content pipeline), set agentPool to a
+#      self-hosted pool whose agents can.
+#
+# Outputs the next steps need: run "scripts/deploy.sh <env> show", or read the deploy log.
+
+trigger: none
+pr: none
+
+parameters:
+  - name: environment
+    displayName: Environment to deploy
+    type: string
+    default: dev
+    values: [dev, qa, uat, prod]
+  - name: agentPool
+    displayName: Agent pool ("Microsoft-hosted" or the name of a self-hosted pool)
+    type: string
+    default: Microsoft-hosted
+
+variables:
+  templateRoot: infrastructure/privately-accessible-static-website-bicep
+  serviceConnection: sc-swa-internal-${{ parameters.environment }}
+
+pool:
+  ${{ if eq(parameters.agentPool, 'Microsoft-hosted') }}:
+    vmImage: ubuntu-latest
+  ${{ else }}:
+    name: ${{ parameters.agentPool }}
+
+stages:
+  - stage: Validate
+    displayName: Validate (${{ parameters.environment }})
+    jobs:
+      - job: Build
+        displayName: Build and lint the Bicep
+        steps:
+          - checkout: self
+
+          - bash: |
+              set -euo pipefail
+              az bicep install
+              az bicep build --file "$(templateRoot)/main.bicep" --stdout > /dev/null
+              az bicep lint --file "$(templateRoot)/main.bicep"
+            displayName: Build and lint main.bicep
+
+          - bash: |
+              set -euo pipefail
+              # Placeholders only: the real secret is created by deploy.sh, never read from here.
+              export ENTRA_CLIENT_ID=00000000-0000-0000-0000-000000000000
+              export ENTRA_CLIENT_SECRET=validate-placeholder
+              az bicep build-params --file "$(templateRoot)/environments/${{ parameters.environment }}/main.bicepparam" --stdout > /dev/null
+            displayName: Build the ${{ parameters.environment }} parameter file
+
+  - stage: WhatIf
+    displayName: What-if (${{ parameters.environment }})
+    dependsOn: Validate
+    jobs:
+      - job: WhatIf
+        displayName: Preview the changes
+        steps:
+          - checkout: self
+
+          - task: AzureCLI@2
+            displayName: Run what-if
+            inputs:
+              azureSubscription: $(serviceConnection)
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                bash "$(templateRoot)/scripts/deploy.sh" "${{ parameters.environment }}" what-if
+
+  - stage: Deploy
+    displayName: Deploy (${{ parameters.environment }})
+    dependsOn: WhatIf
+    jobs:
+      - deployment: Deploy
+        displayName: Deploy ${{ parameters.environment }}
+        environment: swa-internal-infra-${{ parameters.environment }}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                - task: AzureCLI@2
+                  displayName: Deploy with scripts/deploy.sh
+                  inputs:
+                    azureSubscription: $(serviceConnection)
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      bash "$(templateRoot)/scripts/deploy.sh" "${{ parameters.environment }}" deploy

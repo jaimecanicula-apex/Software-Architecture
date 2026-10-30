@@ -26,6 +26,7 @@ Current templates:
 | Private (internal) container app | `infrastructure/privately-accessible-container-app/` | `content/python-mvc-app/` |
 | Private (internal) container app with database and storage | `infrastructure/privately-accessible-container-app-with-database-and-storage/` | `content/python-crud-app/` |
 | Private (internal) static website with storage | `infrastructure/privately-accessible-static-website-with-storage/` | `content/privately-accessible-static-website-with-storage/` |
+| Private (internal) static website, Bicep | `infrastructure/privately-accessible-static-website-bicep/` | `content/privately-accessible-static-website/` (shared with the Terraform version) |
 | Private (internal) static website with storage, Bicep | `infrastructure/privately-accessible-static-website-with-storage-bicep/` | `content/privately-accessible-static-website-with-storage/` (shared with the Terraform version) |
 
 ## Naming conventions
