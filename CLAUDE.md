@@ -28,6 +28,7 @@ Current templates:
 | Private (internal) static website with storage | `infrastructure/privately-accessible-static-website-with-storage/` | `content/privately-accessible-static-website-with-storage/` |
 | Private (internal) static website, Bicep | `infrastructure/privately-accessible-static-website-bicep/` | `content/privately-accessible-static-website/` (shared with the Terraform version) |
 | Private (internal) static website with storage, Bicep | `infrastructure/privately-accessible-static-website-with-storage-bicep/` | `content/privately-accessible-static-website-with-storage/` (shared with the Terraform version) |
+| Public static website with document API, Bicep | `infrastructure/publicly-accessible-static-website-with-document-api-bicep/` | None yet; the Terraform twin is still to be written |
 
 ## Naming conventions
 

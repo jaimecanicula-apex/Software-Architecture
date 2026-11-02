@@ -1,0 +1,82 @@
+# Azure DevOps pipeline for the frontend: deploys the build-free static site to the Static Web App.
+#
+# Build:   checks the site files exist and publishes them as the "site" artifact. The Static Web App's
+#          origin lock (staticwebapp.config.json with the Front Door ID) is written into the artifact
+#          from the SWA_CONFIG_JSON secret, which `deploy.sh <env> show` prints.
+# Release: runs on main only, waits for the approval check on the "swa-production" environment.
+#
+# The Function API and the documents are released separately (azure-pipelines-function.yml,
+# scripts/deploy.sh and the publishers), so api_location is empty and there is no app build.
+#
+# One-time setup in Azure DevOps:
+#   1. Variable group "swa-deployment" with secret variables AZURE_STATIC_WEB_APPS_API_TOKEN and SWA_CONFIG_JSON.
+#   2. Environment "swa-production" with an Approvals check.
+#   3. Branch policy on main: required reviewers.
+#
+# Set siteFolder to the folder in the repository that holds the site files.
+
+parameters:
+  - name: siteFolder
+    type: string
+    default: content/your-site
+
+trigger:
+  branches:
+    include: [main]
+  paths:
+    include:
+      - ${{ parameters.siteFolder }}/*
+      - infrastructure/publicly-accessible-static-website-with-document-api-bicep/pipelines/azure-pipelines-site.yml
+
+pr: none
+
+variables:
+  - group: swa-deployment
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: Build
+    displayName: Build
+    jobs:
+      - job: Package
+        displayName: Check and package the site
+        steps:
+          - checkout: self
+
+          - bash: |
+              test -f "${{ parameters.siteFolder }}/index.html" || { echo "##vso[task.logissue type=error]Missing index.html"; exit 1; }
+            displayName: Check the site files are present
+
+          - bash: |
+              printf '%s' "$SWA_CONFIG_JSON" > "${{ parameters.siteFolder }}/staticwebapp.config.json"
+            displayName: Write the origin lock (Front Door ID and allowed hosts)
+            env:
+              SWA_CONFIG_JSON: $(SWA_CONFIG_JSON)
+
+          - publish: ${{ parameters.siteFolder }}
+            artifact: site
+            displayName: Publish site artifact
+
+  - stage: Release
+    displayName: Release (production)
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: DeployProduction
+        displayName: Deploy to the Static Web App
+        environment: swa-production
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureStaticWebApp@0
+                  displayName: Deploy
+                  inputs:
+                    workingDirectory: $(Pipeline.Workspace)/site
+                    app_location: /
+                    api_location: ""
+                    output_location: ""
+                    skip_app_build: true
+                    azure_static_web_apps_api_token: $(AZURE_STATIC_WEB_APPS_API_TOKEN)

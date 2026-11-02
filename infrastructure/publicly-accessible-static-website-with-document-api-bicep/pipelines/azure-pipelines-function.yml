@@ -1,0 +1,94 @@
+# Azure DevOps pipeline for the document API (Azure Functions, Node.js).
+#
+# Build:   tests the API, installs production dependencies and publishes a ZIP with
+#          host.json, index.js, lib/, package.json and node_modules/ at its root (no test/).
+# Release: ZipDeploys the package to the Function App. The Function has public network access
+#          disabled, so the deploy job must run on a self-hosted agent whose network reaches the
+#          Function's private endpoint (pool: functionDeployPool). A Microsoft-hosted agent cannot.
+#
+# One-time setup in Azure DevOps:
+#   1. Service connection "azure-function-deploy" with rights to deploy to the Function App.
+#   2. Self-hosted agent pool named in functionDeployPool, with a route to the private endpoint.
+#   3. Environment "function-production" with an Approvals check.
+#
+# Set apiFolder to the folder in the repository that holds the Function code.
+
+parameters:
+  - name: apiFolder
+    type: string
+    default: content/your-document-api
+  - name: functionDeployPool
+    type: string
+    default: private-network-agents
+  - name: functionAppName
+    type: string
+    default: func-doc-prod-weu-001
+  - name: resourceGroupName
+    type: string
+    default: rg-doc-prod-weu-001
+
+trigger:
+  branches:
+    include: [main]
+  paths:
+    include:
+      - ${{ parameters.apiFolder }}/*
+      - infrastructure/publicly-accessible-static-website-with-document-api-bicep/pipelines/azure-pipelines-function.yml
+
+pr:
+  branches:
+    include: [main]
+  paths:
+    include:
+      - ${{ parameters.apiFolder }}/*
+
+stages:
+  - stage: Build
+    displayName: Test and package
+    jobs:
+      - job: Package
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+          - task: NodeTool@0
+            inputs:
+              versionSpec: 24.x
+          - bash: |
+              cd "${{ parameters.apiFolder }}"
+              npm ci
+              npm test
+            displayName: Install and test
+          - bash: |
+              cd "${{ parameters.apiFolder }}"
+              rm -rf node_modules
+              npm ci --omit=dev
+              zip -r "$(Build.ArtifactStagingDirectory)/function.zip" host.json index.js lib package.json package-lock.json node_modules
+            displayName: Package production dependencies
+          - publish: $(Build.ArtifactStagingDirectory)/function.zip
+            artifact: function
+
+  - stage: Release
+    displayName: Release (production)
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), ne(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - deployment: DeployFunction
+        displayName: ZipDeploy over the private endpoint
+        pool: ${{ parameters.functionDeployPool }}
+        environment: function-production
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureCLI@2
+                  displayName: ZipDeploy
+                  inputs:
+                    azureSubscription: azure-function-deploy
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      az functionapp deployment source config-zip \
+                        --name "${{ parameters.functionAppName }}" \
+                        --resource-group "${{ parameters.resourceGroupName }}" \
+                        --src "$(Pipeline.Workspace)/function/function.zip"
